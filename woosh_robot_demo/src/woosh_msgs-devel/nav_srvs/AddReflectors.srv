@@ -1,0 +1,4 @@
+bool    is_save            #true:在map中添加新的reflactors； flase:定位
+bool    delete_reflector   #删除地图上已添加的reflector
+uint32   id                #删除指定id号的reflector
+---

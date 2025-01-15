@@ -1,0 +1,2 @@
+float32 max_linear
+float32 max_angular

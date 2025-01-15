@@ -1,0 +1,36 @@
+float32  arg                           #参数
+float32  speed                         #速度
+int32    arg_type                      #arg_type=0：arg表示距离，正值往前，负值往后; arg_type=1：arg表示原地旋转弧度; arg_type=2 : 暂停; arg_type=3：继续
+int32    use_move_avoid                  #0:开启避障功能; 1:关闭避障功能
+float32  close_obstacle_detect_percent  #关闭避障检测时的百分比,大于0,小于等于100,默认值为100
+float32  x_max
+float32  x_min
+float32  y_max
+float32  y_min
+int32    STRAIGHT = 0
+int32    ROTATE = 1
+int32    R_PAUSE = 2
+int32    RESUM = 3
+---
+uint64    err_msg          #状态码
+
+int32    result
+int32    CANCLE = 1
+int32    SUCCESS = 2
+int32    FAILED = 3
+
+float32  remaining_distance   #成功或失败时返回步进的剩余量，单位m
+
+---
+float32  percent
+
+uint64    err_msg          #状态码
+
+int32    status
+int32    EXECUTING = 1
+int32    B_PAUSE = 2
+
+int32    feedback
+int32    OBSTACLE_AVOIDING = 10
+int32    AVOID_SUCCESS = 11
+int32    ILLEGAL_GOAL = 12

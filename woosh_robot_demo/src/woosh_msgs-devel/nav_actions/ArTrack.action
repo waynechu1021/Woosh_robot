@@ -1,0 +1,19 @@
+# Define the goal
+int32 type
+int32 START = 0
+int32 PAUSE = 1  #暂停
+int32 RESUME = 2  #继续
+int32[] id_range #需要识别的二维码的ID范围
+---
+# Define the result
+int32 result
+int32 SUCCESS = 0 #成功
+int32 FAIL = 1  #失败
+int32 CANCEL = 2 #取消
+
+int32 tag_number #识别到二维码的数量
+woosh_msgs/ArTagPose[] ar_tag_pose #二维码的ID和相对于base_footprint的位姿，以及导航点的x,y,θ
+uint64 status_code #状态码
+---
+# Define a feedback message
+uint64 status_code #状态码

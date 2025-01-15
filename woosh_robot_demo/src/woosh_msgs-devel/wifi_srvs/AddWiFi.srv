@@ -1,0 +1,5 @@
+string wifi_parameter
+bool connect_now
+---
+int32 status
+string message

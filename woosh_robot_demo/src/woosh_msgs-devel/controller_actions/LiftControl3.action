@@ -1,0 +1,30 @@
+uint8 mode
+uint8 execmode
+float32 speed
+float32 height
+
+#mode
+uint8 CANCEL = 0
+uint8 EXCUTE = 1
+uint8 PAUSE = 2
+uint8 RESUM = 3
+
+#execmode
+uint8 EXEC_QUERY = 0 #查询状态
+uint8 EXEC_ABSOLUTE = 1 #绝对位置
+uint8 EXEC_RELATIVE = 2 #相对位置
+uint8 EXEC_CALIBRATION = 3 #位置校准
+uint8 EXEC_TESTMODE = 5 #测试模式
+---
+int8 result #1表示执行成功，负值表示执行失败
+uint32 flags
+#flags
+# bit7 位置不可靠
+# bit6
+# bit5 头部限位（下限位）
+# bit4 尾部限位（上限位）
+float32 height
+---
+int8 feedback
+uint32 flags
+float32 height

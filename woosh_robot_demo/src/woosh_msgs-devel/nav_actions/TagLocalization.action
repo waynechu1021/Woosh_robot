@@ -1,0 +1,7 @@
+string  tag_no  #tag编号
+int32   type    #tag定位的模式，1：两个tag，三角定位
+float32 theta   #举升动作时，机器人导航到达点偏转角
+---
+int32 result    #0:成功,1:失败,2:取消
+string err_msg  #成功：SUCCESS，失败：具体失败原因
+---

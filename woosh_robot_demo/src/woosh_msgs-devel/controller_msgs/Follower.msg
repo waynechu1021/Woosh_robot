@@ -1,0 +1,11 @@
+std_msgs/Header header
+uint8 seq
+int8 rssi_first
+int8 rssi_all
+uint8 battery
+uint8 keys
+uint16 tag_id
+float32 distance
+float32 angle
+uint8 anchor_status
+uint8 quality

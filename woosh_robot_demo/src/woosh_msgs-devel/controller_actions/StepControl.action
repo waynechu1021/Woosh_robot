@@ -1,0 +1,23 @@
+uint8 mode
+bool use_avoid
+StepControl[] step_control
+
+#mode
+uint8 CANCEL = 0
+uint8 EXCUTE = 1
+uint8 PAUSE = 2
+uint8 RESUM = 3
+
+#stepControl.executeMode
+uint8 STRAIGHT = 1 # 前行/后退
+uint8 ROTATE = 2  #旋转
+uint8 LATERAL = 3 #横向移动
+uint8 DIAGONALIZE = 4 #斜向移动
+---
+int8 result #1表示执行成功，负值表示执行失败
+uint8 execute_mode
+float32 percent
+---
+int8 feedback
+uint8 execute_mode
+float32 percent

@@ -1,0 +1,14 @@
+int8 type   #0:beacons  1:ar_tag  2:reflector
+int8 mode   #0:开始采集  1:取消采集（beacons多组数据生效）  2:reflector校验
+---
+bool success   # indicate successful run of triggered service
+string message # informational, e.g. for error messages
+bool point1_valid
+bool point2_valid
+bool point3_valid
+uint8 collected_number       #表示此时已经收集几个数据了（总共需要三个）
+int8 number_of_fail_beacons     #三次采集后未发布的uwb基站数
+
+woosh_msgs/DeploymentMarker markers  #基于map坐标系
+
+woosh_msgs/ReflectorErrorIDgroup[] reflector_error_id_groups

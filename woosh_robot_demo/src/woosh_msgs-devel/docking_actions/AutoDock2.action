@@ -1,0 +1,47 @@
+string  tag_no                      #tag编号
+
+int8    board_shape
+int8    ALL_SHAPE = 0               #操作所有特征板
+int8    VL_SHAPE = 1                #VL型特征板
+int8    PARALLEL_SHAPE = 2          #平行特征板
+int8    CONVEX_SHAPE = 3            #凸性特征板
+int8    NARROW_PASSAGE_SHAPE = 4    #狭窄通道特征形状
+int8    ELEVATOR_SHAPE = 5          #电梯口特征形状
+int8    RECTANGLE_SHAPE = 6            #料车
+
+int8    type
+int8    ENTER = 0
+int8    PAUSE = 1
+int8    RESUM = 2
+int8    LEAVE = 3
+int8    RESET = 4
+
+int8    dock_direction              #对接方向
+int8    BACKWARD = 0
+int8    FRONTWARD = 1
+
+geometry_msgs/Pose2D  target_pose    #当此接口用于狭窄通道的时候，此变量起作用。用于判断狭窄通道出口位置点。
+---
+uint64  err_msg
+
+int8    result
+int8    CANCLE = 1
+int8    SUCCESS = 2
+int8    FAILED = 3
+
+uint8   feature_direction
+uint8   EMPTY = 0
+uint8   LEFT = 1
+uint8   RIGHT = 2
+uint8   FRONT = 3
+uint8   BACK = 4
+---
+uint64  err_msg
+
+int8    status
+int8    EXECUTING = 1
+int8    PAUSE = 2
+
+int8    feedback
+int8    ILLEGAL_GOAL = 1
+int8    LEGAL_GOAL = 2

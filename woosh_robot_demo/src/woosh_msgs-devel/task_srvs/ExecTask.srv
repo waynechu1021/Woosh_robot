@@ -1,0 +1,13 @@
+uint8 task_exect      #任务执行请求，1： 执行，2：暂停，3： 继续， 4：取消, 6:等待打断
+int64 task_id         #任务ID
+uint8 task_type       #任务类型, 1: 拣选 2：泊车 3： 充电  4： 搬运
+uint8 direction       #动作方向, 0： 未定义 1： 上料  2：下料, 不是上下料任务填0，可选项
+uint32 task_type_no   #类型组合,默认0，自定义，可选项
+string mark_no        #目标点（储位）编号，如果填写编号，则 任务路经项 可以不用填写，若要填写,任务路经的最后一个点，必须和此储位点一致
+geometry_msgs/PoseStamped[] poses #任务路经，如果是一个点（目标点），则表示由系统自己规划，最总到达此目标点，可选项
+byte custom           # 自定义字段，因项目而异，可选项
+---
+bool success   #执行成功/失败，
+string message # informational, e.g. for error messages
+uint64 status_code #状态码  1:未初始化，2：空闲，3：泊车中，4：任务中，5：警告，6：异常，8：充电中，9：构图中
+

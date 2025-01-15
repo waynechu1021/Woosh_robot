@@ -1,0 +1,80 @@
+-- The C compiler identification is GNU 13.3.0
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 2.5.3 (/opt/ros/jazzy/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter 
+-- Found rclcpp: 28.1.6 (/opt/ros/jazzy/share/rclcpp/cmake)
+-- Found rosidl_generator_c: 4.6.5 (/opt/ros/jazzy/share/rosidl_generator_c/cmake)
+-- Found rosidl_generator_cpp: 4.6.5 (/opt/ros/jazzy/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found rmw_implementation_cmake: 7.3.1 (/opt/ros/jazzy/share/rmw_implementation_cmake/cmake)
+-- Found rmw_cyclonedds_cpp: 2.2.2 (/opt/ros/jazzy/share/rmw_cyclonedds_cpp/cmake)
+-- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+-- Found rclcpp_action: 28.1.6 (/opt/ros/jazzy/share/rclcpp_action/cmake)
+-- Found woosh_robot_msgs: 0.0.1 (/opt/ros/jazzy/share/woosh_robot_msgs/cmake)
+-- Found woosh_ros_msgs: 0.0.1 (/opt/ros/jazzy/share/woosh_ros_msgs/cmake)
+-- Found std_msgs: 5.3.5 (/opt/ros/jazzy/share/std_msgs/cmake)
+-- Configuring done (1.5s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/wayne/workspace/woosh_robot_demo/build/woosh_robot_demo
+[ 14%] [32mBuilding CXX object CMakeFiles/exec_pre_task.dir/src/exec_pre_task.cpp.o[0m
+[ 14%] [32mBuilding CXX object CMakeFiles/stepctrl.dir/src/stepctrl.cpp.o[0m
+[ 28%] [32mBuilding CXX object CMakeFiles/monitor.dir/src/monitor.cpp.o[0m
+[ 28%] [32mBuilding CXX object CMakeFiles/exectask.dir/src/exectask.cpp.o[0m
+[ 35%] [32mBuilding CXX object CMakeFiles/init_robot.dir/src/init_robot.cpp.o[0m
+[ 42%] [32mBuilding CXX object CMakeFiles/goto_mark.dir/src/goto_mark.cpp.o[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/movebase_goal.dir/src/movebase_goal.cpp.o[0m
+[ 57%] [32m[1mLinking CXX executable exec_pre_task[0m
+[ 64%] [32m[1mLinking CXX executable init_robot[0m
+[ 64%] Built target init_robot
+[ 64%] Built target exec_pre_task
+[ 71%] [32m[1mLinking CXX executable stepctrl[0m
+[ 78%] [32m[1mLinking CXX executable movebase_goal[0m
+[ 85%] [32m[1mLinking CXX executable exectask[0m
+[ 85%] Built target stepctrl
+[ 85%] Built target movebase_goal
+[ 85%] Built target exectask
+[ 92%] [32m[1mLinking CXX executable goto_mark[0m
+[ 92%] Built target goto_mark
+[100%] [32m[1mLinking CXX executable monitor[0m
+[100%] Built target monitor
+-- Install configuration: ""
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/monitor
+-- Set non-toolchain portion of runtime path of "/home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/monitor" to ""
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/exectask
+-- Set non-toolchain portion of runtime path of "/home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/exectask" to ""
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/stepctrl
+-- Set non-toolchain portion of runtime path of "/home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/stepctrl" to ""
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/exec_pre_task
+-- Set non-toolchain portion of runtime path of "/home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/exec_pre_task" to ""
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/init_robot
+-- Set non-toolchain portion of runtime path of "/home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/init_robot" to ""
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/goto_mark
+-- Set non-toolchain portion of runtime path of "/home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/goto_mark" to ""
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/movebase_goal
+-- Set non-toolchain portion of runtime path of "/home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/lib/woosh_robot_demo/movebase_goal" to ""
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/ament_index/resource_index/package_run_dependencies/woosh_robot_demo
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/ament_index/resource_index/parent_prefix_path/woosh_robot_demo
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/woosh_robot_demo/environment/ament_prefix_path.sh
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/woosh_robot_demo/environment/ament_prefix_path.dsv
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/woosh_robot_demo/environment/path.sh
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/woosh_robot_demo/environment/path.dsv
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/woosh_robot_demo/local_setup.bash
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/woosh_robot_demo/local_setup.sh
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/woosh_robot_demo/local_setup.zsh
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/woosh_robot_demo/local_setup.dsv
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/woosh_robot_demo/package.dsv
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/ament_index/resource_index/packages/woosh_robot_demo
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/woosh_robot_demo/cmake/woosh_robot_demoConfig.cmake
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/woosh_robot_demo/cmake/woosh_robot_demoConfig-version.cmake
+-- Installing: /home/wayne/workspace/woosh_robot_demo/install/woosh_robot_demo/share/woosh_robot_demo/package.xml

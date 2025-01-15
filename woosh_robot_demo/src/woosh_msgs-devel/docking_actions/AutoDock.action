@@ -1,0 +1,37 @@
+string  tag_no  #tag编号
+
+int32   type
+int32   START = 0
+int32   PAUSE = 1
+int32   RESUM = 2
+int32   LEAVE = 3
+int32   RESET = 4
+
+int32   lift_type
+int32   UP = 0
+int32   DOWN = 1
+
+float32 leave_distance  #-999
+geometry_msgs/Pose2D  target_pose
+---
+uint64  err_msg
+
+int32   result
+int32   CANCLE = 1
+int32   SUCCESS = 2
+int32   FAILED = 3
+
+uint8   roller_direction
+uint8   LEFT = 11
+uint8   RIGHT = 12
+uint8   FRONT = 13
+uint8   BACK = 14
+---
+uint64   err_msg
+
+int32   status
+int32   EXECUTING = 1
+int32   PAUSE = 2
+
+int32   feedback
+int32   ILLEGAL_GOAL = 3

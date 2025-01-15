@@ -1,0 +1,24 @@
+uint8 mode
+uint8 execute_mode
+uint16 rfid
+
+#mode
+uint8 CANCEL = 0
+uint8 EXCUTE = 1
+uint8 PAUSE = 2
+uint8 RESUM = 3
+
+#executeMode
+uint8 MAG_FRONT = 1
+uint8 MAG_BACK = 2
+uint8 RFID_FRONT = 3
+uint8 RFID_BACK = 4
+---
+int8 result #1表示执行成功，负值表示执行失败
+uint8 execute_mode
+uint16 rfid
+float32 distance
+---
+int8 feedback
+uint8 execute_mode
+uint16 rfid

@@ -1,0 +1,15 @@
+float32  arg #参数
+float32  speed #速度
+int32    arg_type #arg_type=1：arg表示距离，正值往前，负值往后; arg_type=2：arg表示原地旋转弧度
+int32    mode  #mode=1:action控制移动 mode=2:action不控制移动，反馈最近障碍物距离
+int32    timeout #检测到障碍物停等超时时间
+
+---
+
+int32    result  #0:成功,1:失败,2:取消
+string   err_msg #成功：SUCCESS，失败：具体失败原因
+float32  obstacle_distance #失败时最近的障碍物距离
+
+---
+
+float32 obstacle_distance #最近障碍物距离
