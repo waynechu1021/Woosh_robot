@@ -17,6 +17,13 @@ Assume that you have connected to the robot either in Wifi or in wired connectio
 
 You can try `ping 169.254.128.2` to make sure you have connected to the robot.
 
+Then add the following to the `.bashrc` and source it.
+
+```bash
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export RMW_NETWORK_INTERFACE=eth2  #the network interface that connect to the robot
+```
+
 **Note** that you must ensure your computer also connect to the Internet at the same time, this is to make the machine could transmit query text and receive the location from another computer. You can also run the relevant program on this machine.
 
 ## Run
