@@ -5,11 +5,10 @@ import time
 import numpy as np
 import cv2
 from scipy.spatial import cKDTree
-import math
+import speech_recognition as sr
 
 
 QUERY_URL = "http://10.16.2.104:12345/hovsg_query"
-
 
 image_path = '/home/wayne/workspace/run/curated_map.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -133,11 +132,24 @@ def execute_navigation_command(x, y, theta):
         return False
 
 def main():
+    r = sr.Recognizer()
     while True:
-        query_text = input('Please input the query text: ')
+        # query_text = input('Please input the query text: ')
+
+        with sr.Microphone() as source:
+            print("请说出指令：")
+            audio = r.listen(source)
+        try:
+            print("语音识别结果:")
+            query_text = r.recognize_google(audio, language='English')
+            query_text = query_text.strip()
+            print(query_text)
+        except sr.UnknownValueError:
+            print("语音识别失败")
+        except sr.RequestError as e:
+            print(f"语音服务连接失败 : {e}")
         print(f"Processing query: {query_text}")
         x, y, theta = get_pose(query_text)
-
         if x is not None and y is not None and theta is not None:
             success = execute_navigation_command(x, y, theta)
             if success != 1:
