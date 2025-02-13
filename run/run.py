@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 from scipy.spatial import cKDTree
 import speech_recognition as sr
-
+import math
 
 QUERY_URL = "http://10.16.2.104:12345/hovsg_query"
 
@@ -84,7 +84,7 @@ def get_pose(query_text):
         data = response.json()
         x = data.get("center", [None, None, None])[0]
         y = data.get("center", [None, None, None])[1]
-        theta = data.get("center", [None, None, None])[2]
+        theta = data.get("center", [None, None, None])[2] #搞笑呢
 
         if x is None or y is None or theta is None:
             print(f"Invalid pose data in response: {data}")
@@ -98,6 +98,7 @@ def get_pose(query_text):
             # new_x = result_coords[0] + 0.7 /math.sqrt(k*k + 1)
             # new_y = result_coords[1] + 0.7 /math.sqrt(k*k + 1)*k
             new_x, new_y = result_coords
+            theta = calculate_theta(x, y, new_x, new_y) #new 指向 old
             print(f"输入点 {input_coords} 不在可行区域，最近的可行点是 {new_x, new_y}.")
             x, y = new_x, new_y
         return x, y, theta
@@ -130,6 +131,12 @@ def execute_navigation_command(x, y, theta):
     except subprocess.CalledProcessError as e:
         print(f"Error executing navigation command: {e.stderr}")
         return False
+
+def calculate_theta(x1, y1, x2, y2): #x2指向x1
+    dx = x1 - x2  # 
+    dy = y1 - y2  #
+    theta = math.atan2(dy, dx)  # 计算角度
+    return theta
 
 def main():
     r = sr.Recognizer()
