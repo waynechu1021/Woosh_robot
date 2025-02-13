@@ -54,6 +54,12 @@ def find_nearest_feasible_point(map_image, pixel_coords):
     nearest_pixel = free_points[index]
     return (nearest_pixel[1], nearest_pixel[0])
 
+def calculate_theta(x1, y1, x2, y2): #x2指向x1
+    dx = x1 - x2  # 
+    dy = y1 - y2  #
+    theta = math.atan2(dy, dx)  # 计算角度
+    return theta
+
 def is_point_feasible(world_coords):
     # convert to pixel coordinate
     pixel_coords = world_to_pixel(world_coords)
@@ -84,7 +90,9 @@ def get_pose(query_text):
         data = response.json()
         x = data.get("center", [None, None, None])[0]
         y = data.get("center", [None, None, None])[1]
-        theta = data.get("center", [None, None, None])[2] #搞笑呢
+        # theta = data.get("center", [None, None, None])[2]
+
+        # x,y = 6.9, -14.77
 
         if x is None or y is None or theta is None:
             print(f"Invalid pose data in response: {data}")
@@ -94,9 +102,6 @@ def get_pose(query_text):
         if feasible:
             print(f"输入点 {input_coords} 在可行区域内。")
         else:
-            # k = (result_coords[1] - y)/(result_coords[0] - x + 10e-6)
-            # new_x = result_coords[0] + 0.7 /math.sqrt(k*k + 1)
-            # new_y = result_coords[1] + 0.7 /math.sqrt(k*k + 1)*k
             new_x, new_y = result_coords
             theta = calculate_theta(x, y, new_x, new_y) #new 指向 old
             print(f"输入点 {input_coords} 不在可行区域，最近的可行点是 {new_x, new_y}.")
@@ -132,11 +137,6 @@ def execute_navigation_command(x, y, theta):
         print(f"Error executing navigation command: {e.stderr}")
         return False
 
-def calculate_theta(x1, y1, x2, y2): #x2指向x1
-    dx = x1 - x2  # 
-    dy = y1 - y2  #
-    theta = math.atan2(dy, dx)  # 计算角度
-    return theta
 
 def main():
     r = sr.Recognizer()
