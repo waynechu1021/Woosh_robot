@@ -7,22 +7,24 @@ import cv2
 from scipy.spatial import cKDTree
 import speech_recognition as sr
 import math
+from openai import OpenAI
+import json
 
-QUERY_URL = "http://10.16.2.104:12345/hovsg_query"
+# QUERY_URL = "http://10.16.2.104:12345/hovsg_query"
 
-image_path = '/home/wayne/workspace/run/curated_map.png'
+image_path = '/home/wayne/workspace/run/map_mid360_editted.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
 # extract all the pixel representing the feasible area
-window_size = 20
+window_size = 10
 result = []
 for i in range(map_image.shape[0]):
     for j in range(map_image.shape[1]):
         # bbox
-        top = max(0, i - window_size // 2)
-        bottom = min(map_image.shape[0], i + window_size // 2 + 1)
-        left = max(0, j - window_size // 2)
-        right = min(map_image.shape[1], j + window_size // 2 + 1)
+        top = max(0, i - window_size)
+        bottom = min(map_image.shape[0], i + window_size)
+        left = max(0, j - window_size)
+        right = min(map_image.shape[1], j + window_size)
         
         window = map_image[top:bottom, left:right]
         
@@ -31,7 +33,12 @@ for i in range(map_image.shape[0]):
 
 # YAML 文件参数
 resolution = 0.05  # each pixel -> real distance
-origin = [-6.884753227233887, -23.146076202392578, 0.0]  # the point of left down
+# origin = [-6.884753227233887, -23.146076202392578, 0.0]  # the point of left down
+origin = [-29.641035598313977, -11.984327112417178, 0]
+
+with open('system_prompt.txt') as f:
+    system_prompt = f.read()
+client = OpenAI()
 
 def world_to_pixel(world_coords):
     x, y = world_coords
@@ -68,7 +75,7 @@ def is_point_feasible(world_coords):
 
     if 0 <= px < map_image.shape[1] and 0 <= py < map_image.shape[0]:
         # if map_image[py, px] > 220:
-        if np.all(map_image[py-10:py+10, px-10:px+10] > 220):
+        if np.all(map_image[py-window_size:py+window_size, px-window_size:px+window_size] > 220):
             return True, world_coords
         else:
             # find the nearest feasible pixel
@@ -81,22 +88,44 @@ def is_point_feasible(world_coords):
 
 def get_pose(query_text):
     try:
-        headers = {"Content-Type": "application/json"}
-        payload = {"query": query_text}
+        '''
+        HOVSG
+        '''
+        # headers = {"Content-Type": "application/json"}
+        # payload = {"query": query_text}
 
-        response = requests.post(QUERY_URL, headers=headers, data=json.dumps(payload))
-        response.raise_for_status()
+        # response = requests.post(QUERY_URL, headers=headers, data=json.dumps(payload))
+        # response.raise_for_status()
 
-        data = response.json()
-        x = data.get("center", [None, None, None])[0]
-        y = data.get("center", [None, None, None])[1]
+        # data = response.json()
+        # x = data.get("center", [None, None, None])[0]
+        # y = data.get("center", [None, None, None])[1]
         # theta = data.get("center", [None, None, None])[2]
 
-        # x,y = 6.9, -14.77
+        # if x is None or y is None or theta is None:
+        #     print(f"Invalid pose data in response: {data}")
+        #     return None, None, None
+        '''
+        gpt
+        '''
+        response = client.chat.completions.create(
+            model="gpt-4-turbo-2024-04-09",
+            messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": query_text},
+            ],
+            stream=False
+        )
 
-        if x is None or y is None or theta is None:
-            print(f"Invalid pose data in response: {data}")
+        result_from_gpt = response.choices[0].message.content.strip('`').strip()
+        result_from_gpt = json.loads(result_from_gpt)
+        print('location:',result_from_gpt)
+
+        if not isinstance(result_from_gpt,list):
             return None, None, None
+        if len(result_from_gpt) == 0:
+            return None, None, None
+        x,y,_ = result_from_gpt[0]["中心坐标"]
         input_coords = [x, y]
         feasible, result_coords = is_point_feasible(input_coords)
         if feasible:
@@ -140,15 +169,16 @@ def execute_navigation_command(x, y, theta):
 
 def main():
     r = sr.Recognizer()
+
     while True:
-        # query_text = input('Please input the query text: ')
+        _ = input('Press any key to continue:')
 
         with sr.Microphone() as source:
             print("请说出指令：")
             audio = r.listen(source)
         try:
             print("语音识别结果:")
-            query_text = r.recognize_google(audio, language='English')
+            query_text = r.recognize_google(audio, language='zh-cn')
             query_text = query_text.strip()
             print(query_text)
         except sr.UnknownValueError:
