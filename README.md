@@ -27,11 +27,11 @@ export RMW_NETWORK_INTERFACE=eth2  #the network interface that connect to the ro
 **Note** that you must ensure your computer also connect to the Internet at the same time, this is to make the machine could transmit query text and receive the location from another computer. You can also run the relevant program on this machine.
 
 ## Run
-Open a terminal and run the robot agent like
+<!-- Open a terminal and run the robot agent like
 
 ```shell
 ros2 run woosh_robot_agent agent --ros-args -r __ns:=/woosh_robot -p ip:="169.254.128.2"
-```
+``` -->
 
 Then open a new terminal and run the open-vocabulary objNav
 ```shell

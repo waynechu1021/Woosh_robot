@@ -197,4 +197,12 @@ def main():
         
 
 if __name__ == "__main__":
+    ros2_process = subprocess.Popen(
+    ["ros2", "run", "woosh_robot_agent", "agent",
+     "--ros-args", "-r", "__ns:=/woosh_robot", "-p", 'ip:="169.254.128.2"'],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True
+)
+    time.sleep(2)
     main()
