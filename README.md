@@ -7,7 +7,7 @@
 ## Re-build the Demo
 ```shell
 cd woosh_robot_demo
-rm -rf build/ devel/ log/
+# rm -rf build/ devel/ log/
 colcon build
 ```
 Then add `source /path/woosh_robot_demo/install/setup.sh` to your `.bashrc` and source it.
