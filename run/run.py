@@ -169,23 +169,24 @@ def execute_navigation_command(x, y, theta):
 
 
 def main():
-    r = sr.Recognizer()
+    # r = sr.Recognizer()
 
     while True:
-        _ = input('Press any key to continue:')
+        # _ = input('Press any key to continue:')
 
-        with sr.Microphone() as source:
-            print("请说出指令：")
-            audio = r.listen(source)
-        try:
-            print("语音识别结果:")
-            query_text = r.recognize_google(audio, language='zh-cn')
-            query_text = query_text.strip()
-            print(query_text)
-        except sr.UnknownValueError:
-            print("语音识别失败")
-        except sr.RequestError as e:
-            print(f"语音服务连接失败 : {e}")
+        # with sr.Microphone() as source:
+        #     print("请说出指令：")
+        #     audio = r.listen(source)
+        # try:
+        #     print("语音识别结果:")
+        #     query_text = r.recognize_google(audio, language='zh-cn')
+        #     query_text = query_text.strip()
+        #     print(query_text)
+        # except sr.UnknownValueError:
+        #     print("语音识别失败")
+        # except sr.RequestError as e:
+        #     print(f"语音服务连接失败 : {e}")
+        query_text = "find the elevator"
         print(f"Processing query: {query_text}")
         x, y, theta = get_pose(query_text)
         if x is not None and y is not None and theta is not None:
