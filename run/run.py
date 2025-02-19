@@ -12,7 +12,7 @@ import json
 
 # QUERY_URL = "http://10.16.2.104:12345/hovsg_query"
 
-image_path = '/home/wayne/workspace/run/map_mid360_editted.png'
+image_path = 'map_mid360_editted.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
 # extract all the pixel representing the feasible area
@@ -38,7 +38,8 @@ origin = [-29.641035598313977, -11.984327112417178, 0]
 
 with open('system_prompt.txt') as f:
     system_prompt = f.read()
-client = OpenAI()
+client = OpenAI(api_key = "sk-85sYGSCUBoQHvGQp72E4Ed5e5c844133Ba143dBf54Cc7c80",
+                base_url = "https://api.gptapi.us/v1")
 
 def world_to_pixel(world_coords):
     x, y = world_coords
