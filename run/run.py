@@ -192,7 +192,7 @@ def main():
         #     print(f"语音服务连接失败 : {e}")
         query_text = "大门旁边右侧的绿植"
         print(f"Processing query: {query_text}")
-        x, y, theta = get_pose(query_text,client,system_prompt, map_image, window_size, result)
+        x, y, theta = get_pose(query_text,client,system_prompt, map_image, window_size, result, origin, resolution)
         if x is not None and y is not None and theta is not None:
             success = execute_navigation_command(x, y, theta, origin, resolution)
             if success != 1:
