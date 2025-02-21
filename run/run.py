@@ -11,22 +11,48 @@ from openai import OpenAI
 import json
 import os
 
+image_path = 'map_mid360_editted.png'
+map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+# extract all the pixel representing the feasible area
+window_size = 10
+result = []
+for i in range(map_image.shape[0]):
+    for j in range(map_image.shape[1]):
+        # bbox
+        top = max(0, i - window_size)
+        bottom = min(map_image.shape[0], i + window_size)
+        left = max(0, j - window_size)
+        right = min(map_image.shape[1], j + window_size)
+        
+        window = map_image[top:bottom, left:right]
+        
+        if np.all(window > 220):
+            result.append((i, j))
+# YAML 文件参数
+resolution = 0.05  # each pixel -> real distance
+# origin = [-6.884753227233887, -23.146076202392578, 0.0]  # the point of left down
+origin = [-29.641035598313977, -11.984327112417178, 0]
+with open('system_prompt.txt') as f:
+    system_prompt = f.read()
+GPT_KEY = os.environ.get('GPT_KEY', "")
+GPT_BASE = os.environ.get('GPT_BASE', "https://m.gptapi.us/v1")
+client = OpenAI(api_key = GPT_KEY,
+                base_url = GPT_BASE)
 
 
-def world_to_pixel(world_coords, origin, resolution, map_image):
+def world_to_pixel(world_coords):
     x, y = world_coords
     pixel_x = int((x - origin[0]) / resolution)
     pixel_y = map_image.shape[0] - int((y - origin[1]) / resolution) # the Coordinate system of cv2 located in the left top
     return pixel_x, pixel_y
 
-def pixel_to_world(pixel_coords, origin, resolution, map_image):
+def pixel_to_world(pixel_coords):
     px, py = pixel_coords
     world_x = px * resolution + origin[0]
     world_y = (map_image.shape[0] - py)* resolution + origin[1]
     return world_x, world_y
 
-def find_nearest_feasible_point(map_image, pixel_coords, result):
-    h, w = map_image.shape
+def find_nearest_feasible_point(pixel_coords):
     # free_points = np.argwhere(map_image > 220)  # get all the feasible area
     free_points = result
     tree = cKDTree(free_points)
@@ -40,7 +66,7 @@ def calculate_theta(x1, y1, x2, y2): #x2指向x1
     theta = math.atan2(dy, dx)  # 计算角度
     return theta
 
-def is_point_feasible(world_coords, map_image, window_size, result, origin, resolution):
+def is_point_feasible(world_coords):
     # convert to pixel coordinate
     pixel_coords = world_to_pixel(world_coords, origin, resolution, map_image)
     px, py = pixel_coords
@@ -52,14 +78,14 @@ def is_point_feasible(world_coords, map_image, window_size, result, origin, reso
             return True, world_coords
         else:
             # find the nearest feasible pixel
-            nearest_pixel = find_nearest_feasible_point(map_image, (py, px), result)
+            nearest_pixel = find_nearest_feasible_point((py, px))
             nearest_world = pixel_to_world(nearest_pixel, origin, resolution, map_image)
             return False, nearest_world
     else:
         raise ValueError("输入点超出地图范围！")
 
 
-def get_pose(query_text, client, system_prompt,  map_image, window_size, result, origin, resolution):
+def get_pose(query_text):
     try:
         '''
         HOVSG
@@ -100,7 +126,7 @@ def get_pose(query_text, client, system_prompt,  map_image, window_size, result,
             return None, None, None
         x,y,_ = result_from_gpt[0]["中心坐标"]
         input_coords = [x, y]
-        feasible, result_coords = is_point_feasible(input_coords, map_image, window_size, result, origin, resolution)
+        feasible, result_coords = is_point_feasible(input_coords)
         if feasible:
             print(f"输入点 {input_coords} 在可行区域内。")
         else:
@@ -149,43 +175,6 @@ def execute_navigation_command(x, y, theta):
 def main():
     # r = sr.Recognizer()
 
-    ros2_process = subprocess.Popen(
-    ["ros2", "run", "woosh_robot_agent", "agent",
-     "--ros-args", "-r", "__ns:=/woosh_robot", "-p", 'ip:="169.254.128.2"'],
-    stdout=subprocess.PIPE,
-    stderr=subprocess.PIPE,
-    text=True
-)
-    time.sleep(2)
-
-
-    image_path = 'map_mid360_editted.png'
-    map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    # extract all the pixel representing the feasible area
-    window_size = 10
-    result = []
-    for i in range(map_image.shape[0]):
-        for j in range(map_image.shape[1]):
-            # bbox
-            top = max(0, i - window_size)
-            bottom = min(map_image.shape[0], i + window_size)
-            left = max(0, j - window_size)
-            right = min(map_image.shape[1], j + window_size)
-            
-            window = map_image[top:bottom, left:right]
-            
-            if np.all(window > 220):
-                result.append((i, j))
-    # YAML 文件参数
-    resolution = 0.05  # each pixel -> real distance
-    # origin = [-6.884753227233887, -23.146076202392578, 0.0]  # the point of left down
-    origin = [-29.641035598313977, -11.984327112417178, 0]
-    with open('system_prompt.txt') as f:
-        system_prompt = f.read()
-    GPT_KEY = os.environ.get('GPT_KEY', "")
-    GPT_BASE = os.environ.get('GPT_BASE', "https://m.gptapi.us/v1")
-    client = OpenAI(api_key = GPT_KEY,
-                    base_url = GPT_BASE)
     while True:
         # _ = input('Press any key to continue:')
 
@@ -203,7 +192,7 @@ def main():
         #     print(f"语音服务连接失败 : {e}")
         query_text = "大门旁边右侧的绿植"
         print(f"Processing query: {query_text}")
-        x, y, theta = get_pose(query_text,client,system_prompt, map_image, window_size, result, origin, resolution)
+        x, y, theta = get_pose(query_text)
         if x is not None and y is not None and theta is not None:
             success = execute_navigation_command(x, y, theta)
             if success != 1:
@@ -214,4 +203,12 @@ def main():
         break
 
 if __name__ == "__main__":
+    ros2_process = subprocess.Popen(
+    ["ros2", "run", "woosh_robot_agent", "agent",
+     "--ros-args", "-r", "__ns:=/woosh_robot", "-p", 'ip:="169.254.128.2"'],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True
+)
+    time.sleep(2)
     main()
