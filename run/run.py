@@ -12,10 +12,10 @@ import json
 import os
 
 # QUERY_URL = "http://10.16.2.104:12345/hovsg_query"
-
+print(1)
 image_path = 'map_mid360_editted.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-
+print(2)
 # extract all the pixel representing the feasible area
 window_size = 10
 result = []
@@ -31,7 +31,7 @@ for i in range(map_image.shape[0]):
         
         if np.all(window > 220):
             result.append((i, j))
-
+print(3)
 # YAML 文件参数
 resolution = 0.05  # each pixel -> real distance
 # origin = [-6.884753227233887, -23.146076202392578, 0.0]  # the point of left down
