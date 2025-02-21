@@ -9,6 +9,7 @@ import speech_recognition as sr
 import math
 from openai import OpenAI
 import json
+import os
 
 # QUERY_URL = "http://10.16.2.104:12345/hovsg_query"
 
@@ -38,8 +39,11 @@ origin = [-29.641035598313977, -11.984327112417178, 0]
 
 with open('system_prompt.txt') as f:
     system_prompt = f.read()
-client = OpenAI(api_key = "sk-85sYGSCUBoQHvGQp72E4Ed5e5c844133Ba143dBf54Cc7c80",
-                base_url = "https://m.gptapi.us/v1")
+
+GPT_KEY = os.environ.get('GPT_KEY', "sk-85sYGSCUBoQHvGQp72E4Ed5e5c844133Ba143dBf54Cc7c80")
+GPT_BASE = os.environ.get('GPT_BASE', "https://m.gptapi.us/v1")
+client = OpenAI(api_key = GPT_KEY,
+                base_url = GPT_BASE)
 
 def world_to_pixel(world_coords):
     x, y = world_coords
