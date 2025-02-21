@@ -68,7 +68,7 @@ def calculate_theta(x1, y1, x2, y2): #x2指向x1
 
 def is_point_feasible(world_coords):
     # convert to pixel coordinate
-    pixel_coords = world_to_pixel(world_coords, origin, resolution, map_image)
+    pixel_coords = world_to_pixel(world_coords)
     px, py = pixel_coords
     print(px, py)
 
@@ -79,7 +79,7 @@ def is_point_feasible(world_coords):
         else:
             # find the nearest feasible pixel
             nearest_pixel = find_nearest_feasible_point((py, px))
-            nearest_world = pixel_to_world(nearest_pixel, origin, resolution, map_image)
+            nearest_world = pixel_to_world(nearest_pixel)
             return False, nearest_world
     else:
         raise ValueError("输入点超出地图范围！")
