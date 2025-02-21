@@ -1,5 +1,0 @@
-int32 timeout
----
-int32 status
-string message
-string wifi_list

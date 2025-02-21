@@ -1,9 +1,0 @@
-# Set Get beacon list
-bool is_save #true: save beacon list false: get beacon list
-Beacon[] beacon_list
-
----
-
-Beacon[] beacon_list
-string message
-

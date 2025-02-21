@@ -1,6 +1,0 @@
-uint8 safety_field
----
-bool enable
-uint8 safety_field
-bool success
-string message

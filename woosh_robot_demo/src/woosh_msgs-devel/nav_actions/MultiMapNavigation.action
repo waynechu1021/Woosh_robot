@@ -1,6 +1,0 @@
-string map_name  # 目标点所在地图名称
-geometry_msgs/PoseStamped target_pose  #目标点位姿
----
-int32 result  # 1: 到达目标点成功，0：到达目标点失败
----
-int32 wormhole_feedback # 1: 到达虫洞成功，0：到达虫洞失败

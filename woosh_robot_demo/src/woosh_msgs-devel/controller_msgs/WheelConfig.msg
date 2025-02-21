@@ -1,2 +1,0 @@
-float32 wheel_perimeter
-float32 wheel_distant

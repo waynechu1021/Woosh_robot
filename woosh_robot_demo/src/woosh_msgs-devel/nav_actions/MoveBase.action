@@ -1,7 +1,0 @@
-geometry_msgs/PoseStamped[] poses #发路经
-geometry_msgs/PoseStamped target_pose #发目标点
-uint8 execution_mode # 1: 逐个点执行 0:自由执行
----
----
-geometry_msgs/PoseStamped base_position  #机器人当前实时坐标
-int64 nav_state   #

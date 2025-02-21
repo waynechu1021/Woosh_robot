@@ -1,6 +1,0 @@
-std_msgs/Header header
-string hardware_version
-string software_version
-string iapsoftware_version
-string movebase_type
-Parameter parameter

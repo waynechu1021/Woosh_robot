@@ -1,5 +1,0 @@
-int8 type   #0:start
----
-bool success   # indicate successful run of triggered service
-string message # informational, e.g. for error messages
-ArTagPose ar_tag_pose
