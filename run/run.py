@@ -39,7 +39,7 @@ origin = [-29.641035598313977, -11.984327112417178, 0]
 with open('system_prompt.txt') as f:
     system_prompt = f.read()
 client = OpenAI(api_key = "sk-85sYGSCUBoQHvGQp72E4Ed5e5c844133Ba143dBf54Cc7c80",
-                base_url = "https://api.gptapi.us/v1")
+                base_url = "https://m.gptapi.us/v1")
 
 def world_to_pixel(world_coords):
     x, y = world_coords
@@ -145,11 +145,17 @@ def get_pose(query_text):
         return None, None, None
 
 def execute_navigation_command(x, y, theta):
-    # x, y = 10.0, -10.0
+    # x, y = 0.55, -0.65
+    # nav_command = [
+    #     "ros2", "run", "woosh_robot_demo", "movebase_goal",
+    #     "--ros-args", "-p", f"t_x:={x}", "-p", f"t_y:={y}", "-p", f"t_theta:={theta}"
+    # ]
     nav_command = [
-        "ros2", "run", "woosh_robot_demo", "movebase_goal",
-        "--ros-args", "-p", f"t_x:={x}", "-p", f"t_y:={y}", "-p", f"t_theta:={theta}"
-    ]
+    "ros2", "action", "send_goal", "/woosh_robot/ros/MoveBase", 
+    "woosh_ros_msgs/action/MoveBase", 
+    f"{{arg:{{poses:[{{x: {x}, y: {y}, theta: {theta}}}], target_pose:{{x: {x}, y: {y}, theta: {theta}}}, execution_mode:{{value: 1}}, action:{{value: 1}}}}}}",
+    "--feedback"
+]
     print(f"Executing navigation command: {' '.join(nav_command)}")
     try:
         result = subprocess.run(
@@ -186,7 +192,7 @@ def main():
         #     print("语音识别失败")
         # except sr.RequestError as e:
         #     print(f"语音服务连接失败 : {e}")
-        query_text = "find the elevator"
+        query_text = "大门旁边右侧的绿植"
         print(f"Processing query: {query_text}")
         x, y, theta = get_pose(query_text)
         if x is not None and y is not None and theta is not None:
