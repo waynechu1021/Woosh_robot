@@ -194,7 +194,7 @@ def main():
         print(f"Processing query: {query_text}")
         x, y, theta = get_pose(query_text,client,system_prompt, map_image, window_size, result, origin, resolution)
         if x is not None and y is not None and theta is not None:
-            success = execute_navigation_command(x, y, theta, origin, resolution)
+            success = execute_navigation_command(x, y, theta)
             if success != 1:
                 print("Exiting loop due to failure in navigation command.")
                 break
