@@ -148,6 +148,17 @@ def execute_navigation_command(x, y, theta):
 
 def main():
     # r = sr.Recognizer()
+
+    ros2_process = subprocess.Popen(
+    ["ros2", "run", "woosh_robot_agent", "agent",
+     "--ros-args", "-r", "__ns:=/woosh_robot", "-p", 'ip:="169.254.128.2"'],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True
+)
+    time.sleep(2)
+
+
     image_path = 'map_mid360_editted.png'
     map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     # extract all the pixel representing the feasible area
@@ -203,12 +214,4 @@ def main():
         break
 
 if __name__ == "__main__":
-#     ros2_process = subprocess.Popen(
-#     ["ros2", "run", "woosh_robot_agent", "agent",
-#      "--ros-args", "-r", "__ns:=/woosh_robot", "-p", 'ip:="169.254.128.2"'],
-#     stdout=subprocess.PIPE,
-#     stderr=subprocess.PIPE,
-#     text=True
-# )
-#     time.sleep(2)
     main()
