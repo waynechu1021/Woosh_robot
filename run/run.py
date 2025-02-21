@@ -12,7 +12,7 @@ import json
 import os
 
 # QUERY_URL = "http://10.16.2.104:12345/hovsg_query"
-print(1)
+print("-------------------------------------------------\n")
 image_path = 'map_mid360_editted.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 print(2)
