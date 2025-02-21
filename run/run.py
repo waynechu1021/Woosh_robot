@@ -10,6 +10,7 @@ import math
 from openai import OpenAI
 import json
 import os
+import re
 
 image_path = 'map_mid360_editted.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -159,9 +160,11 @@ def execute_navigation_command(x, y, theta):
         result = subprocess.run(
             nav_command, capture_output=True, text=True, check=True
         )
-        print(result.stderr)
+        # print(result.stderr)
         # if "Result: 步进完成." in result.stderr:
-        if result.returncode == 0:
+        return_code = re.findall(r"ret:\n  action: woosh.ros.action.MoveBase\n  state:\n    value: (\d)\n", result.stdout)
+        # if result.returncode == 0:
+        if len(return_code == 1) and int(return_code[0]) == 1:
             print("Navigation command succeeded.")
             return True
         else:
