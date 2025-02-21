@@ -11,6 +11,9 @@ from openai import OpenAI
 import json
 import os
 import re
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
 
 image_path = 'map_mid360_editted.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -164,7 +167,7 @@ def execute_navigation_command(x, y, theta):
         # if "Result: 步进完成." in result.stderr:
         return_code = re.findall(r"ret:\n  action: woosh.ros.action.MoveBase\n  state:\n    value: (\d)\n", result.stdout)
         # if result.returncode == 0:
-        if len(return_code == 1) and int(return_code[0]) == 1:
+        if len(return_code) == 1 and int(return_code[0]) == 1:
             print("Navigation command succeeded.")
             return True
         else:
@@ -175,35 +178,46 @@ def execute_navigation_command(x, y, theta):
         return False
 
 
-def main():
+def text_nav(query_text):
     # r = sr.Recognizer()
 
-    while True:
-        # _ = input('Press any key to continue:')
+    # _ = input('Press any key to continue:')
 
-        # with sr.Microphone() as source:
-        #     print("请说出指令：")
-        #     audio = r.listen(source)
-        # try:
-        #     print("语音识别结果:")
-        #     query_text = r.recognize_google(audio, language='zh-cn')
-        #     query_text = query_text.strip()
-        #     print(query_text)
-        # except sr.UnknownValueError:
-        #     print("语音识别失败")
-        # except sr.RequestError as e:
-        #     print(f"语音服务连接失败 : {e}")
-        query_text = "大门旁边右侧的绿植"
-        print(f"Processing query: {query_text}")
-        x, y, theta = get_pose(query_text)
-        if x is not None and y is not None and theta is not None:
-            success = execute_navigation_command(x, y, theta)
-            if success != 1:
-                print("Exiting loop due to failure in navigation command.")
-                break
-        else:
-            print("Skipping navigation due to invalid pose data.")
-        break
+    # with sr.Microphone() as source:
+    #     print("请说出指令：")
+    #     audio = r.listen(source)
+    # try:
+    #     print("语音识别结果:")
+    #     query_text = r.recognize_google(audio, language='zh-cn')
+    #     query_text = query_text.strip()
+    #     print(query_text)
+    # except sr.UnknownValueError:
+    #     print("语音识别失败")
+    # except sr.RequestError as e:
+    #     print(f"语音服务连接失败 : {e}")
+    print(f"Processing query: {query_text}")
+    x, y, theta = get_pose(query_text)
+    if x is not None and y is not None and theta is not None:
+        success = execute_navigation_command(x, y, theta)
+        if success != 1:
+            print("Exiting loop due to failure in navigation command.")
+    else:
+        print("Skipping navigation due to invalid pose data.")
+
+
+
+@app.route('/text_nav', methods=['POST'])
+def text_nav_handler():
+    data = request.get_json()
+    goal_text = data.get('query_text')
+
+    if not goal_text:
+        return jsonify({"error": "Goal text is required"}), 400
+
+    text_nav(goal_text)
+
+    return jsonify({"message": "ok"})
+
 
 if __name__ == "__main__":
     ros2_process = subprocess.Popen(
@@ -214,4 +228,4 @@ if __name__ == "__main__":
     text=True
 )
     time.sleep(2)
-    main()
+    app.run(debug=True)
