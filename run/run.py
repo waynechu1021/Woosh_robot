@@ -182,7 +182,7 @@ def main():
     origin = [-29.641035598313977, -11.984327112417178, 0]
     with open('system_prompt.txt') as f:
         system_prompt = f.read()
-    GPT_KEY = os.environ.get('GPT_KEY', "sk-85sYGSCUBoQHvGQp72E4Ed5e5c844133Ba143dBf54Cc7c80")
+    GPT_KEY = os.environ.get('GPT_KEY', "")
     GPT_BASE = os.environ.get('GPT_BASE', "https://m.gptapi.us/v1")
     client = OpenAI(api_key = GPT_KEY,
                     base_url = GPT_BASE)
