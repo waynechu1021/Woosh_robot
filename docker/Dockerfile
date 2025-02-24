@@ -24,6 +24,7 @@ RUN pip3 install --user \
     SpeechRecognition \
     opencv-python-headless \
     openai \
+    flask \
     && rm -rf /root/.cache/pip
 
 WORKDIR /root
