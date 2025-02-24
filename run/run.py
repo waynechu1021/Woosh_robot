@@ -201,8 +201,11 @@ def text_nav(query_text):
         success = execute_navigation_command(x, y, theta)
         if success != 1:
             print("Exiting loop due to failure in navigation command.")
+            return False, "Exiting loop due to failure in navigation command."
+        return True, "Navigation success"
     else:
         print("Skipping navigation due to invalid pose data.")
+        return False, "Skipping navigation due to invalid pose data."
 
 
 
@@ -212,11 +215,11 @@ def text_nav_handler():
     goal_text = data.get('query_text')
 
     if not goal_text:
-        return jsonify({"error": "Goal text is required"}), 400
+        return jsonify({"message": "Goal text is required"}), 400
 
-    text_nav(goal_text)
+    returncode,info = text_nav(goal_text)
 
-    return jsonify({"message": "ok"})
+    return jsonify({"returncode":returncode,"message": info})
 
 
 if __name__ == "__main__":
