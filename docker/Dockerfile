@@ -38,5 +38,4 @@ RUN chmod +x ros-foxy-woosh-robot-agent_0.0.1-0focal_arm64.run
 RUN ./ros-foxy-woosh-robot-agent_0.0.1-0focal_arm64.run
 
 WORKDIR /root/Woosh_robot
-CMD /bin/bash -c "git pull && \
-    cd run && GPT_KEY=\"\" python3 run.py"
+CMD /bin/bash -c "cd run && GPT_KEY=\"\" python3 run.py"
