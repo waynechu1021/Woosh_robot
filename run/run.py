@@ -38,10 +38,10 @@ resolution = 0.05  # each pixel -> real distance
 origin = [-29.641035598313977, -11.984327112417178, 0]
 with open('system_prompt.txt') as f:
     system_prompt = f.read()
-GPT_KEY = os.environ.get('GPT_KEY', "")
-GPT_BASE = os.environ.get('GPT_BASE', "https://m.gptapi.us/v1")
-client = OpenAI(api_key = GPT_KEY,
-                base_url = GPT_BASE)
+# GPT_KEY = os.environ.get('GPT_KEY', "")
+# GPT_BASE = os.environ.get('GPT_BASE', "https://m.gptapi.us/v1")
+# client = OpenAI(api_key = GPT_KEY,
+#                 base_url = GPT_BASE)
 
 
 def world_to_pixel(world_coords):
@@ -111,16 +111,19 @@ def get_pose(query_text):
         '''
         gpt
         '''
-        response = client.chat.completions.create(
-            model="gpt-4-turbo-2024-04-09",
-            messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": query_text},
-            ],
-            stream=False
-        )
+        # response = client.chat.completions.create(
+        #     model="gpt-4-turbo-2024-04-09",
+        #     messages=[
+        #     {"role": "system", "content": system_prompt},
+        #     {"role": "user", "content": query_text},
+        #     ],
+        #     stream=False
+        # )
+        # result_from_gpt = response.choices[0].message.content.strip('`').strip()
 
-        result_from_gpt = response.choices[0].message.content.strip('`').strip()
+        result_from_gpt = requests.post("http://172.18.35.200:8000/uploads/llm_queries", json={"instruction": system_prompt, "prompt": query_text} )
+        result_from_gpt = result_from_gpt.json()['read_message']
+
         result_from_gpt = json.loads(result_from_gpt)
         print('location:',result_from_gpt)
 
