@@ -168,14 +168,24 @@ def execute_navigation_command(x, y, theta):
         )
         # print(result.stderr)
         # if "Result: 步进完成." in result.stderr:
-        return_code = re.findall(r"ret:\n  action: woosh.ros.action.MoveBase\n  state:\n    value: (\d)\n", result.stdout)
+        return_code = re.findall(r"ret:\n  action: woosh.ros.action.MoveBase\n  state:\n    value: (.*)\n", result.stdout)
         # if result.returncode == 0:
         if len(return_code) == 1 and int(return_code[0]) == 1:
-            print("Navigation command succeeded.")
-            return True
+            msg = "Navigation command succeeded."
+            print(msg)
+            return True, msg, int(return_code[0])
+        elif int(return_code[0]) == -1 or int(return_code[0]) == 5:
+            msg = "Navigation command failed."
+            print(msg)
+            return False, msg, int(return_code[0])
+        elif int(return_code[0]) == 2:
+            msg = "Navigation command still processing"
+            print(msg)
+            return False, msg, int(return_code[0])
         else:
-            print(f"Unexpected response: {result.stdout}")
-            return False
+            msg = f"Unexpected response: {result.stdout}"
+            print(msg)
+            return False, msg, int(return_code[0])
     except subprocess.CalledProcessError as e:
         print(f"Error executing navigation command: {e.stderr}")
         return False
@@ -220,9 +230,9 @@ def text_nav_handler():
     if not goal_text:
         return jsonify({"message": "Goal text is required"}), 400
 
-    returncode,info = text_nav(goal_text)
+    success_flag,info,state = text_nav(goal_text)
 
-    return jsonify({"returncode":returncode,"message": info})
+    return jsonify({"success_flag":success_flag,"message": info,"state":state})
 
 
 if __name__ == "__main__":
