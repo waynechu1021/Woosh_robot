@@ -211,14 +211,11 @@ def text_nav(query_text):
     print(f"Processing query: {query_text}")
     x, y, theta = get_pose(query_text)
     if x is not None and y is not None and theta is not None:
-        success = execute_navigation_command(x, y, theta)
-        if success != 1:
-            print("Exiting loop due to failure in navigation command.")
-            return False, "Exiting loop due to failure in navigation command."
-        return True, "Navigation success"
+        success_flag,info,state = execute_navigation_command(x, y, theta)
+        return success_flag,info,state
     else:
         print("Skipping navigation due to invalid pose data.")
-        return False, "Skipping navigation due to invalid pose data."
+        return False, "Skipping navigation due to invalid pose data.",-2
 
 
 
