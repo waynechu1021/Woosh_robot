@@ -15,7 +15,7 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-image_path = 'map_mid360_editted.png'
+image_path = 'map_mid360_editted_03_04.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 # extract all the pixel representing the feasible area
 window_size = 10
