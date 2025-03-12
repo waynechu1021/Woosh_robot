@@ -314,5 +314,4 @@ if __name__ == "__main__":
     text=True
 )
     time.sleep(2)
-    # app.run(host='0.0.0.0',debug=True)
-    excute_forward_command(0.5)
+    app.run(host='0.0.0.0',debug=True)
