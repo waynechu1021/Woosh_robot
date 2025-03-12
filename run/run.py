@@ -15,7 +15,7 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-image_path = 'map_mid360_editted_03_04.png'
+image_path = 'workspace/Woosh_robot/run/map_mid360_editted_03_04.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 # extract all the pixel representing the feasible area
 window_size = 10
@@ -36,7 +36,7 @@ for i in range(map_image.shape[0]):
 resolution = 0.05  # each pixel -> real distance
 # origin = [-6.884753227233887, -23.146076202392578, 0.0]  # the point of left down
 origin = [-29.641035598313977, -11.984327112417178, 0]
-with open('system_prompt.txt') as f:
+with open('workspace/Woosh_robot/run/system_prompt.txt') as f:
     system_prompt = f.read()
 # GPT_KEY = os.environ.get('GPT_KEY', "")
 # GPT_BASE = os.environ.get('GPT_BASE', "https://m.gptapi.us/v1")
@@ -88,6 +88,42 @@ def is_point_feasible(world_coords):
     else:
         raise ValueError("输入点超出地图范围！")
 
+def get_lidar():
+    scan_command = [
+        "ros2", "service", "call", "/woosh_robot/robot/ScannerData",
+        "woosh_robot_msgs/srv/ScannerData",
+    ]
+    print(f"Executing lidar request command: {' '.join(scan_command)}")
+    try:
+        result = subprocess.run(
+            scan_command, capture_output=True, text=True, check=True
+        )
+        print(result.stderr)
+        if result.returncode == 0:
+            print("Lidar request command succeeded.")
+
+            pattern = r"pose=woosh_common_msgs.msg.Pose2D\((.*)\), commu"
+            match = re.findall(pattern, result.stdout)
+            pos = match[1] # 获取匹配的数字部分
+            initial_position = [float(re.findall('x=(.*), y',pos)[0]),float(re.findall('y=(.*), t',pos)[0]),float(re.findall('theta=(.*)',pos)[0])]
+
+            pattern = r"ranges=\[(.*)\]"
+            match = re.findall(pattern, result.stdout)
+
+            if match:
+                ranges_str = match[1] # 获取匹配的数字部分
+                ranges_list = [float(num) for num in ranges_str.split(',') if num.strip()]
+                ranges_list = np.array(ranges_list)
+                return ranges_list, initial_position
+            else:
+                print("No match found.")
+                return None, None
+        else:
+            print(f"Unexpected response: {result.stdout}")
+            return None, None
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing lidar request command: {e.stderr}")
+        return None, None
 
 def get_pose(query_text):
     try:
@@ -149,7 +185,54 @@ def get_pose(query_text):
         print(f"Error decoding JSON response: {e}")
         return None, None, None
 
-def execute_navigation_command(x, y, theta):
+def excute_forward_command(distance):
+    if distance > 0:
+        lidar_scan, _ = get_lidar()
+        angles = np.linspace(-2.1999948024749756, 2.1999948024749756, len(lidar_scan))  # 角度范围
+        indice = np.where( (angles >= -math.pi/6) & (angles <= math.pi/6) )
+        lidar_scan = lidar_scan[indice]
+        max_distance = np.min(lidar_scan) * 0.95
+        if max_distance < distance:
+            distance = max_distance 
+            print(f'It can only proceed with {max_distance} meters')
+    forward_command = [
+    "ros2", "action", "send_goal", "/woosh_robot/ros/StepControl", 
+    "woosh_ros_msgs/action/StepControl", 
+    f"{{arg:{{action:{{value: 1}}, avoid: 1, steps:[{{mode:{{value: 1}}, speed: 0.5, value: {distance}}}]}}}}",
+    "--feedback"]
+    print(f"Executing navigation command: {' '.join(forward_command)}")
+    try:
+        result = subprocess.run(
+            forward_command, capture_output=True, text=True, check=True
+        )
+        return_code = re.findall(r"ret:\n  action: woosh.ros.action.StepControl\n  state:\n    value: (.*)\n", result.stdout)
+        if len(return_code) == 1 and int(return_code[0]) == 1:
+            msg = "Forward command succeeded."
+            print(msg)
+            return True, msg, int(return_code[0])
+        elif int(return_code[0]) == -1 or int(return_code[0]) == 5:
+            msg = "Forward command failed."
+            print(msg)
+            return False, msg, int(return_code[0])
+        elif int(return_code[0]) == 2:
+            msg = "Forward command still processing"
+            print(msg)
+            return False, msg, int(return_code[0])
+        else:
+            msg = f"Unexpected response: {result.stdout}"
+            print(msg)
+            return False, msg, int(return_code[0])
+    except subprocess.CalledProcessError as e:
+        msg = f"Error executing forward command: {e.stderr}"
+        print(msg)
+        return False, msg, -1
+
+def execute_navigation_command(query_text):
+    print(f"Processing query: {query_text}")
+    x, y, theta = get_pose(query_text)
+    if x is None or y is None or theta is None:
+        print("Skipping navigation due to invalid pose data.")
+        return False, "Skipping navigation due to invalid pose data.",-2
     # x, y = 0.55, -0.65
     # nav_command = [
     #     "ros2", "run", "woosh_robot_demo", "movebase_goal",
@@ -187,35 +270,9 @@ def execute_navigation_command(x, y, theta):
             print(msg)
             return False, msg, int(return_code[0])
     except subprocess.CalledProcessError as e:
-        print(f"Error executing navigation command: {e.stderr}")
-        return False
-
-
-def text_nav(query_text):
-    # r = sr.Recognizer()
-
-    # _ = input('Press any key to continue:')
-
-    # with sr.Microphone() as source:
-    #     print("请说出指令：")
-    #     audio = r.listen(source)
-    # try:
-    #     print("语音识别结果:")
-    #     query_text = r.recognize_google(audio, language='zh-cn')
-    #     query_text = query_text.strip()
-    #     print(query_text)
-    # except sr.UnknownValueError:
-    #     print("语音识别失败")
-    # except sr.RequestError as e:
-    #     print(f"语音服务连接失败 : {e}")
-    print(f"Processing query: {query_text}")
-    x, y, theta = get_pose(query_text)
-    if x is not None and y is not None and theta is not None:
-        success_flag,info,state = execute_navigation_command(x, y, theta)
-        return success_flag,info,state
-    else:
-        print("Skipping navigation due to invalid pose data.")
-        return False, "Skipping navigation due to invalid pose data.",-2
+        msg = f"Error executing navigation command: {e.stderr}"
+        print(msg)
+        return False, msg, -1
 
 
 
@@ -227,10 +284,22 @@ def text_nav_handler():
     if not goal_text:
         return jsonify({"message": "Goal text is required"}), 400
 
-    success_flag,info,state = text_nav(goal_text)
+    success_flag,info,state = execute_navigation_command(goal_text)
 
     return jsonify({"success_flag":success_flag,"message": info,"state":state})
 
+
+@app.route('/forward', methods=['POST'])
+def forward_handler():
+    data = request.get_json()
+    distance = float(data.get('distance'))
+
+    if not distance:
+        return jsonify({"message": "Distance is required"}), 400
+
+    success_flag,info,state = excute_forward_command(distance)
+
+    return jsonify({"success_flag":success_flag,"message": info,"state":state})
 
 if __name__ == "__main__":
     ros2_process = subprocess.Popen(
