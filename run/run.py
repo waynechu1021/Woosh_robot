@@ -189,9 +189,13 @@ def excute_forward_command(distance):
     if distance > 0:
         lidar_scan, _ = get_lidar()
         angles = np.linspace(-2.1999948024749756, 2.1999948024749756, len(lidar_scan))  # 角度范围
-        indice = np.where( (angles >= -math.pi/6) & (angles <= math.pi/6) )
+        indice = np.where( (angles >= -math.pi/4) & (angles <= math.pi/4))
         lidar_scan = lidar_scan[indice]
         max_distance = np.min(lidar_scan) * 0.95
+        if max_distance < 0.1:
+            msg = "Max_distance is too small."
+            print(msg)
+            return True, msg, 1
         if max_distance < distance:
             distance = max_distance 
             print(f'It can only proceed with {max_distance} meters')
@@ -310,4 +314,5 @@ if __name__ == "__main__":
     text=True
 )
     time.sleep(2)
-    app.run(host='0.0.0.0',debug=True)
+    # app.run(host='0.0.0.0',debug=True)
+    excute_forward_command(0.5)
