@@ -15,7 +15,7 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-image_path = 'workspace/Woosh_robot/run/map_mid360_editted_03_04.png'
+image_path = 'map_mid360_editted_03_04.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 # extract all the pixel representing the feasible area
 window_size = 10
@@ -36,7 +36,7 @@ for i in range(map_image.shape[0]):
 resolution = 0.05  # each pixel -> real distance
 # origin = [-6.884753227233887, -23.146076202392578, 0.0]  # the point of left down
 origin = [-29.641035598313977, -11.984327112417178, 0]
-with open('workspace/Woosh_robot/run/system_prompt.txt') as f:
+with open('system_prompt.txt') as f:
     system_prompt = f.read()
 # GPT_KEY = os.environ.get('GPT_KEY', "")
 # GPT_BASE = os.environ.get('GPT_BASE', "https://m.gptapi.us/v1")
