@@ -18,7 +18,7 @@ docker build -t nav .
 ```
 or you can enter the interactive interface
 ```bash
-docker run --network host --name nav_container nav #when container doesn't exist
+docker run --network host -it --name nav_container nav #when container doesn't exist
 docker start -i -a nav_container #when container exists
 ```
 
