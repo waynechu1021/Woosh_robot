@@ -159,7 +159,8 @@ def get_pose(query_text):
 
         result_from_gpt = requests.post("http://172.18.35.200:8000/uploads/llm_queries", json={"instruction": system_prompt, "prompt": query_text} )
         result_from_gpt = result_from_gpt.json()['read_message']
-
+        result_from_gpt = result_from_gpt.replace('```json\n','')
+        result_from_gpt = result_from_gpt.replace('```','')
         result_from_gpt = json.loads(result_from_gpt)
         print('location:',result_from_gpt)
 
