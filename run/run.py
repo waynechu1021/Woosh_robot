@@ -186,7 +186,39 @@ def get_pose(query_text):
         print(f"Error decoding JSON response: {e}")
         return None, None, None
 
-def excute_forward_command(distance):
+def excute_base_command(command,comand_type,message_type = None):
+    print(f"Executing {comand_type} command: {' '.join(command)}")
+    try:
+        result = subprocess.run(
+            command, capture_output=True, text=True, check=True
+        )
+        return_code = re.findall(f"ret:\n  action: woosh.ros.action.{message_type}\n  state:\n    value: (.*)\n", result.stdout)
+        if len(return_code) == 1 and int(return_code[0]) == 1:
+            msg = f"{comand_type} command succeeded."
+            print(msg)
+            return True, msg, int(return_code[0])
+        elif int(return_code[0]) == -1 or int(return_code[0]) == 5:
+            msg = f"Forward command failed."
+            print(msg)
+            return False, msg, int(return_code[0])
+        elif int(return_code[0]) == 2:
+            msg = f"{comand_type} command still processing"
+            print(msg)
+            return False, msg, int(return_code[0])
+        else:
+            msg = f"Unexpected response: {result.stdout}"
+            print(msg)
+            return False, msg, int(return_code[0])
+    except subprocess.CalledProcessError as e:
+        msg = f"Error executing {comand_type} command: {e.stderr}"
+        print(msg)
+        return False, msg, -1
+
+def execute_forward_command(distance):
+    '''
+    distance > 0 -----> move forward
+    distance < 0 -----> move backward
+    '''
     if distance > 0:
         lidar_scan, _ = get_lidar()
         angles = np.linspace(-2.1999948024749756, 2.1999948024749756, len(lidar_scan))  # 角度范围
@@ -205,32 +237,19 @@ def excute_forward_command(distance):
     "woosh_ros_msgs/action/StepControl", 
     f"{{arg:{{action:{{value: 1}}, avoid: 1, steps:[{{mode:{{value: 1}}, speed: 0.5, value: {distance}}}]}}}}",
     "--feedback"]
-    print(f"Executing navigation command: {' '.join(forward_command)}")
-    try:
-        result = subprocess.run(
-            forward_command, capture_output=True, text=True, check=True
-        )
-        return_code = re.findall(r"ret:\n  action: woosh.ros.action.StepControl\n  state:\n    value: (.*)\n", result.stdout)
-        if len(return_code) == 1 and int(return_code[0]) == 1:
-            msg = "Forward command succeeded."
-            print(msg)
-            return True, msg, int(return_code[0])
-        elif int(return_code[0]) == -1 or int(return_code[0]) == 5:
-            msg = "Forward command failed."
-            print(msg)
-            return False, msg, int(return_code[0])
-        elif int(return_code[0]) == 2:
-            msg = "Forward command still processing"
-            print(msg)
-            return False, msg, int(return_code[0])
-        else:
-            msg = f"Unexpected response: {result.stdout}"
-            print(msg)
-            return False, msg, int(return_code[0])
-    except subprocess.CalledProcessError as e:
-        msg = f"Error executing forward command: {e.stderr}"
-        print(msg)
-        return False, msg, -1
+    return excute_base_command(forward_command,"forward","StepControl")
+
+def execute_rotate_command(theta):
+    '''
+    theta > 0 -----> turn right
+    theta < 0 -----> turn left
+    '''
+    rotate_command = [
+    "ros2", "action", "send_goal", "/woosh_robot/ros/StepControl", 
+    "woosh_ros_msgs/action/StepControl", 
+    f"{{arg:{{action:{{value: 1}}, avoid: 1, steps:[{{mode:{{value: 2}}, speed: 0.78, value: {theta}}}]}}}}",
+    "--feedback"]
+    return excute_base_command(rotate_command,"rotate","StepControl")
 
 def execute_navigation_command(query_text):
     print(f"Processing query: {query_text}")
@@ -238,7 +257,6 @@ def execute_navigation_command(query_text):
     if x is None or y is None or theta is None:
         print("Skipping navigation due to invalid pose data.")
         return False, "Skipping navigation due to invalid pose data.",-2
-    # x, y = 0.55, -0.65
     # nav_command = [
     #     "ros2", "run", "woosh_robot_demo", "movebase_goal",
     #     "--ros-args", "-p", f"t_x:={x}", "-p", f"t_y:={y}", "-p", f"t_theta:={theta}"
@@ -250,36 +268,19 @@ def execute_navigation_command(query_text):
     "--feedback"
 ]
     print(f"Executing navigation command: {' '.join(nav_command)}")
-    try:
-        result = subprocess.run(
-            nav_command, capture_output=True, text=True, check=True
-        )
-        # print(result.stderr)
-        # if "Result: 步进完成." in result.stderr:
-        return_code = re.findall(r"ret:\n  action: woosh.ros.action.MoveBase\n  state:\n    value: (.*)\n", result.stdout)
-        # if result.returncode == 0:
-        if len(return_code) == 1 and int(return_code[0]) == 1:
-            msg = "Navigation command succeeded."
-            print(msg)
-            return True, msg, int(return_code[0])
-        elif int(return_code[0]) == -1 or int(return_code[0]) == 5:
-            msg = "Navigation command failed."
-            print(msg)
-            return False, msg, int(return_code[0])
-        elif int(return_code[0]) == 2:
-            msg = "Navigation command still processing"
-            print(msg)
-            return False, msg, int(return_code[0])
-        else:
-            msg = f"Unexpected response: {result.stdout}"
-            print(msg)
-            return False, msg, int(return_code[0])
-    except subprocess.CalledProcessError as e:
-        msg = f"Error executing navigation command: {e.stderr}"
-        print(msg)
-        return False, msg, -1
+    return excute_base_command(nav_command,"navigation","MoveBase")
 
-
+def execute_shift_command(distance):
+    '''
+    distance > 0 -----> move left
+    distance < 0 -----> move right
+    '''
+    shift_command = [
+    "ros2", "action", "send_goal", "/woosh_robot/ros/StepControl", 
+    "woosh_ros_msgs/action/StepControl", 
+    f"{{arg:{{action:{{value: 1}}, avoid: 1, steps:[{{mode:{{value: 3}}, speed: 0.5, value: {distance}}}]}}}}",
+    "--feedback"]
+    return excute_base_command(shift_command,"shift","StepControl")
 
 @app.route('/text_nav', methods=['POST'])
 def text_nav_handler():
@@ -302,7 +303,31 @@ def forward_handler():
     if not distance:
         return jsonify({"message": "Distance is required"}), 400
 
-    success_flag,info,state = excute_forward_command(distance)
+    success_flag,info,state = execute_forward_command(distance)
+
+    return jsonify({"success_flag":success_flag,"message": info,"state":state})
+
+@app.route('/rotate', methods=['POST'])
+def rotate_handler():
+    data = request.get_json()
+    theta = float(data.get('theta'))
+
+    if not theta:
+        return jsonify({"message": "Theta is required"}), 400
+
+    success_flag,info,state = execute_rotate_command(theta)
+
+    return jsonify({"success_flag":success_flag,"message": info,"state":state})
+
+@app.route('/shift', methods=['POST'])
+def shift_handler():
+    data = request.get_json()
+    distance = float(data.get('distance'))
+
+    if not distance:
+        return jsonify({"message": "Distance is required"}), 400
+
+    success_flag,info,state = execute_shift_command(distance)
 
     return jsonify({"success_flag":success_flag,"message": info,"state":state})
 
@@ -315,4 +340,4 @@ if __name__ == "__main__":
     text=True
 )
     time.sleep(2)
-    app.run(host='0.0.0.0',debug=True)
+    app.run(host='0.0.0.0',debug=True,threaded=True)
