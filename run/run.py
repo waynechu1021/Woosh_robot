@@ -64,10 +64,15 @@ def find_nearest_feasible_point(pixel_coords):
     nearest_pixel = free_points[index]
     return (nearest_pixel[1], nearest_pixel[0])
 
-def calculate_theta(x1, y1, x2, y2): #x2指向x1
-    dx = x1 - x2  # 
-    dy = y1 - y2  #
-    theta = math.atan2(dy, dx)  # 计算角度
+def theta2Quaternion(x,y,theta):
+    z = math.sin(theta / 2)
+    w = math.cos(theta / 2)
+    return x, y, z, w 
+
+def calculate_theta(x1, y1, x2, y2): #x2 -> x1
+    dx = x1 - x2  #
+    dy = y1 - y2  
+    theta = math.atan2(dy, dx)  # calculate angle
     return theta
 
 def is_point_feasible(world_coords):
@@ -87,6 +92,33 @@ def is_point_feasible(world_coords):
             return False, nearest_world
     else:
         raise ValueError("输入点超出地图范围！")
+
+def get_current_position_speed():
+    command = [
+        "ros2", "service", "call", "/woosh_robot/robot/PoseSpeed", "woosh_robot_msgs/srv/PoseSpeed"
+    ]
+    print(f"Executing get current position request command: {' '.join(command)}")
+    try:
+        result = subprocess.run(
+            command, capture_output=True, text=True, check=True
+        )
+        print(result.stderr)
+        if result.returncode == 0:
+            print("Current position request command succeeded.")
+
+            pattern = r"twist=woosh_common_msgs.msg.Twist\((.*)\), pose=woosh_common_msgs.msg.Pose2D\((.*)\), map"
+            match = re.findall(pattern, result.stdout)
+            speed = match[0][0]
+            pos = match[0][1]
+            current_position = [float(re.findall('x=(.*), y',pos)[0]),float(re.findall('y=(.*), t',pos)[0]),float(re.findall('theta=(.*)',pos)[0])]
+            current_speed = [float(re.findall('linear=(.*), ',speed)[0]),float(re.findall('angular=(.*)',speed)[0])]
+            return current_position,current_speed
+        else:
+            print(f"Unexpected response: {result.stdout}")
+            return None
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing lidar request command: {e.stderr}")
+        return None
 
 def get_lidar():
     scan_command = [
@@ -127,23 +159,6 @@ def get_lidar():
 
 def get_pose(query_text):
     try:
-        '''
-        HOVSG
-        '''
-        # headers = {"Content-Type": "application/json"}
-        # payload = {"query": query_text}
-
-        # response = requests.post(QUERY_URL, headers=headers, data=json.dumps(payload))
-        # response.raise_for_status()
-
-        # data = response.json()
-        # x = data.get("center", [None, None, None])[0]
-        # y = data.get("center", [None, None, None])[1]
-        # theta = data.get("center", [None, None, None])[2]
-
-        # if x is None or y is None or theta is None:
-        #     print(f"Invalid pose data in response: {data}")
-        #     return None, None, None
         '''
         gpt
         '''
@@ -192,13 +207,16 @@ def excute_base_command(command,comand_type,message_type = None):
         result = subprocess.run(
             command, capture_output=True, text=True, check=True
         )
+        if "Goal finished with status: CANCELED\n" in result.stdout:
+            msg = f"{comand_type} command canceled."
+            return False, msg, -1
         return_code = re.findall(f"ret:\n  action: woosh.ros.action.{message_type}\n  state:\n    value: (.*)\n", result.stdout)
         if len(return_code) == 1 and int(return_code[0]) == 1:
             msg = f"{comand_type} command succeeded."
             print(msg)
             return True, msg, int(return_code[0])
         elif int(return_code[0]) == -1 or int(return_code[0]) == 5:
-            msg = f"Forward command failed."
+            msg = f"{comand_type} command failed."
             print(msg)
             return False, msg, int(return_code[0])
         elif int(return_code[0]) == 2:
@@ -267,8 +285,35 @@ def execute_navigation_command(query_text):
     f"{{arg:{{poses:[{{x: {x}, y: {y}, theta: {theta}}}], target_pose:{{x: {x}, y: {y}, theta: {theta}}}, execution_mode:{{value: 1}}, action:{{value: 1}}}}}}",
     "--feedback"
 ]
-    print(f"Executing navigation command: {' '.join(nav_command)}")
     return excute_base_command(nav_command,"navigation","MoveBase")
+
+def execute_stop_command():
+    # first send a goal that is unreachable to make the robot stop
+    x,y = -100, -100
+    theta = 0
+    nav_command = [
+    "ros2", "action", "send_goal", "/woosh_robot/ros/MoveBase", 
+    "woosh_ros_msgs/action/MoveBase", 
+    f"{{arg:{{poses:[{{x: {x}, y: {y}, theta: {theta}}}], target_pose:{{x: {x}, y: {y}, theta: {theta}}}, execution_mode:{{value: 1}}, action:{{value: 1}}}}}}",
+    "--feedback"
+    ]
+    process = subprocess.Popen(
+                nav_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
+    process.kill()
+    process.wait()
+    [x,y,theta],[linear,angular] = get_current_position_speed()
+    # make sure current speed is zero
+    while linear != 0 or angular != 0:
+        [x,y,theta],[linear,angular] = get_current_position_speed()
+    # send a new navigation command to cover the previous one
+    nav_command = [
+    "ros2", "action", "send_goal", "/woosh_robot/ros/MoveBase", 
+    "woosh_ros_msgs/action/MoveBase", 
+    f"{{arg:{{poses:[{{x: {x}, y: {y}, theta: {theta}}}], target_pose:{{x: {x}, y: {y}, theta: {theta}}}, execution_mode:{{value: 1}}, action:{{value: 1}}}}}}",
+    "--feedback"
+]
+    return excute_base_command(nav_command,"stop","MoveBase")
 
 def execute_shift_command(distance):
     '''
@@ -281,6 +326,12 @@ def execute_shift_command(distance):
     f"{{arg:{{action:{{value: 1}}, avoid: 1, steps:[{{mode:{{value: 3}}, speed: 0.5, value: {distance}}}]}}}}",
     "--feedback"]
     return excute_base_command(shift_command,"shift","StepControl")
+
+
+@app.route('/stop', methods=['POST'])
+def action_stop_handler():
+    success_flag,info,state = execute_stop_command()
+    return jsonify({"success_flag":success_flag,"message": info,"state":state})
 
 @app.route('/text_nav', methods=['POST'])
 def text_nav_handler():
