@@ -300,8 +300,8 @@ def execute_stop_command():
     process = subprocess.Popen(
                 nav_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
             )
+    time.sleep(2)
     process.kill()
-    process.wait()
     [x,y,theta],[linear,angular] = get_current_position_speed()
     # make sure current speed is zero
     while linear != 0 or angular != 0:
