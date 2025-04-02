@@ -7,14 +7,17 @@ import cv2
 from scipy.spatial import cKDTree
 import speech_recognition as sr
 import math
-from openai import OpenAI
+import datetime
 import json
-import os
-import re
+import logging
+import re,os
 from flask import Flask, request, jsonify
 
-app = Flask(__name__)
+os.makedirs('./log',exist_ok=True)
+log_filename = datetime.datetime.now().strftime("log/log_%Y-%m-%d_%H-%M-%S.log")
+logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(asctime)s - %(message)s")
 
+app = Flask(__name__)
 image_path = 'map_mid360_editted_03_04.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 # extract all the pixel representing the feasible area
@@ -79,7 +82,6 @@ def is_point_feasible(world_coords):
     # convert to pixel coordinate
     pixel_coords = world_to_pixel(world_coords)
     px, py = pixel_coords
-    print(px, py)
 
     if 0 <= px < map_image.shape[1] and 0 <= py < map_image.shape[0]:
         # if map_image[py, px] > 220:
@@ -91,20 +93,21 @@ def is_point_feasible(world_coords):
             nearest_world = pixel_to_world(nearest_pixel)
             return False, nearest_world
     else:
+        logging.error("输入点超出地图范围！")
         raise ValueError("输入点超出地图范围！")
 
 def get_current_position_speed():
     command = [
         "ros2", "service", "call", "/woosh_robot/robot/PoseSpeed", "woosh_robot_msgs/srv/PoseSpeed"
     ]
-    print(f"Executing get current position request command: {' '.join(command)}")
+    logging.info(f"Executing get current position request command: {' '.join(command)}")
     try:
         result = subprocess.run(
             command, capture_output=True, text=True, check=True
         )
-        print(result.stderr)
+        logging.info(result.stderr)
         if result.returncode == 0:
-            print("Current position request command succeeded.")
+            logging.info("Current position request command succeeded.")
 
             pattern = r"twist=woosh_common_msgs.msg.Twist\((.*)\), pose=woosh_common_msgs.msg.Pose2D\((.*)\), map"
             match = re.findall(pattern, result.stdout)
@@ -114,10 +117,10 @@ def get_current_position_speed():
             current_speed = [float(re.findall('linear=(.*), ',speed)[0]),float(re.findall('angular=(.*)',speed)[0])]
             return current_position,current_speed
         else:
-            print(f"Unexpected response: {result.stdout}")
+            logging.warning(f"Unexpected response: {result.stdout}")
             return None
     except subprocess.CalledProcessError as e:
-        print(f"Error executing lidar request command: {e.stderr}")
+        logging.error(f"Error executing lidar request command: {e.stderr}")
         return None
 
 def get_lidar():
@@ -125,14 +128,14 @@ def get_lidar():
         "ros2", "service", "call", "/woosh_robot/robot/ScannerData",
         "woosh_robot_msgs/srv/ScannerData",
     ]
-    print(f"Executing lidar request command: {' '.join(scan_command)}")
+    logging.info(f"Executing lidar request command: {' '.join(scan_command)}")
     try:
         result = subprocess.run(
             scan_command, capture_output=True, text=True, check=True
         )
-        print(result.stderr)
+        logging.info(result.stderr)
         if result.returncode == 0:
-            print("Lidar request command succeeded.")
+            logging.info("Lidar request command succeeded.")
 
             pattern = r"pose=woosh_common_msgs.msg.Pose2D\((.*)\), commu"
             match = re.findall(pattern, result.stdout)
@@ -148,13 +151,13 @@ def get_lidar():
                 ranges_list = np.array(ranges_list)
                 return ranges_list, initial_position
             else:
-                print("No match found.")
+                logging.warning("No match found.")
                 return None, None
         else:
-            print(f"Unexpected response: {result.stdout}")
+            logging.warning(f"Unexpected response: {result.stdout}")
             return None, None
     except subprocess.CalledProcessError as e:
-        print(f"Error executing lidar request command: {e.stderr}")
+        logging.error(f"Error executing lidar request command: {e.stderr}")
         return None, None
 
 def get_pose(query_text):
@@ -177,7 +180,7 @@ def get_pose(query_text):
         result_from_gpt = result_from_gpt.replace('```json\n','')
         result_from_gpt = result_from_gpt.replace('```','')
         result_from_gpt = json.loads(result_from_gpt)
-        print('location:',result_from_gpt)
+        logging.info('location:',result_from_gpt)
 
         if not isinstance(result_from_gpt,list):
             return None, None, None
@@ -187,22 +190,22 @@ def get_pose(query_text):
         input_coords = [x, y]
         feasible, result_coords = is_point_feasible(input_coords)
         if feasible:
-            print(f"输入点 {input_coords} 在可行区域内。")
+            logging.info(f"输入点 {input_coords} 在可行区域内。")
         else:
             new_x, new_y = result_coords
             theta = calculate_theta(x, y, new_x, new_y) #new 指向 old
-            print(f"输入点 {input_coords} 不在可行区域，最近的可行点是 {new_x, new_y}.")
+            logging.info(f"输入点 {input_coords} 不在可行区域，最近的可行点是 {new_x, new_y}.")
             x, y = new_x, new_y
         return x, y, theta
     except requests.RequestException as e:
-        print(f"Error during request: {e}")
+        logging.error(f"Error during request: {e}")
         return None, None, None
     except json.JSONDecodeError as e:
-        print(f"Error decoding JSON response: {e}")
+        logging.error(f"Error decoding JSON response: {e}")
         return None, None, None
 
 def excute_base_command(command,comand_type,message_type = None):
-    print(f"Executing {comand_type} command: {' '.join(command)}")
+    logging.info(f"Executing {comand_type} command: {' '.join(command)}")
     try:
         result = subprocess.run(
             command, capture_output=True, text=True, check=True
@@ -213,23 +216,23 @@ def excute_base_command(command,comand_type,message_type = None):
         return_code = re.findall(f"ret:\n  action: woosh.ros.action.{message_type}\n  state:\n    value: (.*)\n", result.stdout)
         if len(return_code) == 1 and int(return_code[0]) == 1:
             msg = f"{comand_type} command succeeded."
-            print(msg)
+            logging.info(msg)
             return True, msg, int(return_code[0])
         elif int(return_code[0]) == -1 or int(return_code[0]) == 5:
             msg = f"{comand_type} command failed."
-            print(msg)
+            logging.info(msg)
             return False, msg, int(return_code[0])
         elif int(return_code[0]) == 2:
             msg = f"{comand_type} command still processing"
-            print(msg)
+            logging.info(msg)
             return False, msg, int(return_code[0])
         else:
             msg = f"Unexpected response: {result.stdout}"
-            print(msg)
+            logging.info(msg)
             return False, msg, int(return_code[0])
     except subprocess.CalledProcessError as e:
         msg = f"Error executing {comand_type} command: {e.stderr}"
-        print(msg)
+        logging.error(msg)
         return False, msg, -1
 
 def execute_forward_command(distance):
@@ -245,11 +248,11 @@ def execute_forward_command(distance):
         max_distance = np.min(lidar_scan) * 0.95
         if max_distance < 0.1:
             msg = "Max_distance is too small."
-            print(msg)
+            logging.warning(msg)
             return True, msg, 1
         if max_distance < distance:
             distance = max_distance 
-            print(f'It can only proceed with {max_distance} meters')
+            logging.warning(f'It can only proceed with {max_distance} meters')
     forward_command = [
     "ros2", "action", "send_goal", "/woosh_robot/ros/StepControl", 
     "woosh_ros_msgs/action/StepControl", 
@@ -270,10 +273,10 @@ def execute_rotate_command(theta):
     return excute_base_command(rotate_command,"rotate","StepControl")
 
 def execute_navigation_command(query_text):
-    print(f"Processing query: {query_text}")
+    logging.info(f"Processing query: {query_text}")
     x, y, theta = get_pose(query_text)
     if x is None or y is None or theta is None:
-        print("Skipping navigation due to invalid pose data.")
+        logging.warning("Skipping navigation due to invalid pose data.")
         return False, "Skipping navigation due to invalid pose data.",-2
     # nav_command = [
     #     "ros2", "run", "woosh_robot_demo", "movebase_goal",
@@ -390,4 +393,4 @@ if __name__ == "__main__":
     text=True
 )
     time.sleep(2)
-    app.run(host='0.0.0.0',debug=True,threaded=True)
+    app.run(host='0.0.0.0',debug=False,threaded=True)
