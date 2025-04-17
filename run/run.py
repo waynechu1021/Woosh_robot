@@ -118,10 +118,10 @@ def get_current_position_speed():
             return current_position,current_speed
         else:
             logging.warning(f"Unexpected response: {result.stdout}")
-            return None
+            return None, None
     except subprocess.CalledProcessError as e:
         logging.error(f"Error executing lidar request command: {e.stderr}")
-        return None
+        return None, None
 
 def get_lidar():
     scan_command = [
@@ -329,6 +329,11 @@ def execute_shift_command(distance):
     "--feedback"]
     return excute_base_command(shift_command,"shift","StepControl")
 
+
+@app.route('/get_pose_speed', methods=['POST'])
+def get_pose_speed_handler():
+    [x,y,theta],[linear,angular] = get_current_position_speed()
+    return jsonify({"pose":[x,y,theta],"speed": [linear,angular]})
 
 @app.route('/stop', methods=['POST'])
 def action_stop_handler():
