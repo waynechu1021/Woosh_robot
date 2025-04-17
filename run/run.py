@@ -180,7 +180,7 @@ def get_pose(query_text):
         result_from_gpt = result_from_gpt.replace('```json\n','')
         result_from_gpt = result_from_gpt.replace('```','')
         result_from_gpt = json.loads(result_from_gpt)
-        logging.info('location:',result_from_gpt)
+        logging.info(f'location: {result_from_gpt}')
 
         if not isinstance(result_from_gpt,list):
             return None, None, None
