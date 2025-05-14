@@ -22,7 +22,7 @@ app = Flask(__name__)
 image_path = 'map_mid360_editted_03_04.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 # extract all the pixel representing the feasible area
-window_size = 30
+window_size = 10
 result = []
 for i in range(map_image.shape[0]):
     for j in range(map_image.shape[1]):
