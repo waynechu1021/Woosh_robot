@@ -18,10 +18,11 @@ log_filename = datetime.datetime.now().strftime("log/log_%Y-%m-%d_%H-%M-%S.log")
 logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(asctime)s - %(message)s")
 
 app = Flask(__name__)
+# image_path = 'map_mid360_for_path.png'
 image_path = 'map_mid360_editted_03_04.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 # extract all the pixel representing the feasible area
-window_size = 10
+window_size = 30
 result = []
 for i in range(map_image.shape[0]):
     for j in range(map_image.shape[1]):
@@ -37,7 +38,6 @@ for i in range(map_image.shape[0]):
             result.append((i, j))
 # YAML 文件参数
 resolution = 0.05  # each pixel -> real distance
-# origin = [-6.884753227233887, -23.146076202392578, 0.0]  # the point of left down
 origin = [-29.641035598313977, -11.984327112417178, 0]
 with open('system_prompt.txt') as f:
     system_prompt = f.read()
@@ -120,7 +120,7 @@ def get_current_position_speed():
             logging.warning(f"Unexpected response: {result.stdout}")
             return None, None
     except subprocess.CalledProcessError as e:
-        logging.error(f"Error executing lidar request command: {e.stderr}")
+        logging.error(f"Error executing pose and speed request command: {e.stderr}")
         return None, None
 
 def get_lidar():
@@ -291,31 +291,15 @@ def execute_navigation_command(query_text):
     return excute_base_command(nav_command,"navigation","MoveBase")
 
 def execute_stop_command():
-    # first send a goal that is unreachable to make the robot stop
-    x,y = -100, -100
-    theta = 0
-    nav_command = [
-    "ros2", "action", "send_goal", "/woosh_robot/ros/MoveBase", 
-    "woosh_ros_msgs/action/MoveBase", 
-    f"{{arg:{{poses:[{{x: {x}, y: {y}, theta: {theta}}}], target_pose:{{x: {x}, y: {y}, theta: {theta}}}, execution_mode:{{value: 1}}, action:{{value: 1}}}}}}",
-    "--feedback"
+    stop_command = [
+    "ros2", "service", "call", "/woosh_robot/ros/MoveBase/_action/cancel_goal", 
+    "action_msgs/srv/CancelGoal"
     ]
-    process = subprocess.Popen(
-                nav_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-            )
-    [x,y,theta],[linear,angular] = get_current_position_speed()
-    # make sure current speed is zero
-    while linear != 0 or angular != 0:
-        [x,y,theta],[linear,angular] = get_current_position_speed()
-    process.kill()
-    # send a new navigation command to cover the previous one
-    nav_command = [
-    "ros2", "action", "send_goal", "/woosh_robot/ros/MoveBase", 
-    "woosh_ros_msgs/action/MoveBase", 
-    f"{{arg:{{poses:[{{x: {x}, y: {y}, theta: {theta}}}], target_pose:{{x: {x}, y: {y}, theta: {theta}}}, execution_mode:{{value: 1}}, action:{{value: 1}}}}}}",
-    "--feedback"
-]
-    return excute_base_command(nav_command,"stop","MoveBase")
+    result = subprocess.run(
+            stop_command, capture_output=True, text=True, check=True
+        )
+    msg = f'stop command success'
+    return True, msg, 1
 
 def execute_shift_command(distance):
     '''
@@ -388,6 +372,16 @@ def shift_handler():
     success_flag,info,state = execute_shift_command(distance)
 
     return jsonify({"success_flag":success_flag,"message": info,"state":state})
+
+@app.route('/get_lidar', methods=['POST'])
+def lidar_handler():
+
+    lidar_scan, _ = get_lidar()
+    angles = np.linspace(-2.1999948024749756, 2.1999948024749756, len(lidar_scan))  # 角度范围
+    indice = np.where( (angles >= -math.pi/4) & (angles <= math.pi/4))
+    lidar_scan = lidar_scan[indice]
+    return jsonify({"lidar_scan":lidar_scan})
+
 
 if __name__ == "__main__":
     ros2_process = subprocess.Popen(
