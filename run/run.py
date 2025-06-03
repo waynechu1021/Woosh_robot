@@ -340,7 +340,10 @@ def text_nav_handler():
 @app.route('/forward', methods=['POST'])
 def forward_handler():
     data = request.get_json()
+    direction = str(data.get('direction'))
     distance = float(data.get('distance'))
+    if direction != 'forward':
+        distance = -1*distance
 
     if not distance:
         return jsonify({"message": "Distance is required"}), 400
@@ -352,7 +355,10 @@ def forward_handler():
 @app.route('/rotate', methods=['POST'])
 def rotate_handler():
     data = request.get_json()
+    direction = str(data.get('direction'))
     theta = float(data.get('theta'))
+    if direction != 'right':
+        theta =  -1*theta
 
     if not theta:
         return jsonify({"message": "Theta is required"}), 400
@@ -364,7 +370,10 @@ def rotate_handler():
 @app.route('/shift', methods=['POST'])
 def shift_handler():
     data = request.get_json()
+    direction = str(data.get('direction'))
     distance = float(data.get('distance'))
+    if direction != 'left':
+        distance = -1*distance
 
     if not distance:
         return jsonify({"message": "Distance is required"}), 400
