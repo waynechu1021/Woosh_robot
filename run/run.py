@@ -342,13 +342,16 @@ def forward_handler():
     data = request.get_json()
     direction = str(data.get('direction'))
     distance = float(data.get('distance'))
-    if direction != 'forward':
-        distance = -1*distance
 
     if not distance:
         return jsonify({"message": "Distance is required"}), 400
 
-    success_flag,info,state = execute_forward_command(distance)
+    if direction == 'backward' or direction == 'right':
+        distance = -1*distance
+    if direction == 'forward' or direction == 'backward':
+        success_flag,info,state = execute_forward_command(distance)
+    if direction == 'left' or direction == 'right':
+        success_flag,info,state = execute_shift_command(distance)
 
     return jsonify({"success_flag":success_flag,"message": info,"state":state})
 
@@ -367,20 +370,20 @@ def rotate_handler():
 
     return jsonify({"success_flag":success_flag,"message": info,"state":state})
 
-@app.route('/shift', methods=['POST'])
-def shift_handler():
-    data = request.get_json()
-    direction = str(data.get('direction'))
-    distance = float(data.get('distance'))
-    if direction != 'left':
-        distance = -1*distance
+# @app.route('/shift', methods=['POST'])
+# def shift_handler():
+#     data = request.get_json()
+#     direction = str(data.get('direction'))
+#     distance = float(data.get('distance'))
+#     if direction != 'left':
+#         distance = -1*distance
 
-    if not distance:
-        return jsonify({"message": "Distance is required"}), 400
+#     if not distance:
+#         return jsonify({"message": "Distance is required"}), 400
 
-    success_flag,info,state = execute_shift_command(distance)
+#     success_flag,info,state = execute_shift_command(distance)
 
-    return jsonify({"success_flag":success_flag,"message": info,"state":state})
+#     return jsonify({"success_flag":success_flag,"message": info,"state":state})
 
 @app.route('/get_lidar', methods=['POST'])
 def lidar_handler():
