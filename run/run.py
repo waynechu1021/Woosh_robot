@@ -360,7 +360,7 @@ def rotate_handler():
     data = request.get_json()
     direction = str(data.get('direction'))
     theta = float(data.get('theta'))
-    if direction != 'right':
+    if direction == 'right':
         theta =  -1*theta
 
     if not theta:
