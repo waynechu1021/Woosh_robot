@@ -18,7 +18,6 @@ log_filename = datetime.datetime.now().strftime("log/log_%Y-%m-%d_%H-%M-%S.log")
 logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(asctime)s - %(message)s")
 
 app = Flask(__name__)
-# image_path = 'map_mid360_for_path.png'
 image_path = 'map_mid360_editted_03_04.png'
 map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 # extract all the pixel representing the feasible area
@@ -41,10 +40,6 @@ resolution = 0.05  # each pixel -> real distance
 origin = [-29.641035598313977, -11.984327112417178, 0]
 with open('system_prompt.txt') as f:
     system_prompt = f.read()
-# GPT_KEY = os.environ.get('GPT_KEY', "")
-# GPT_BASE = os.environ.get('GPT_BASE', "https://m.gptapi.us/v1")
-# client = OpenAI(api_key = GPT_KEY,
-#                 base_url = GPT_BASE)
 
 
 def world_to_pixel(world_coords):
@@ -370,20 +365,6 @@ def rotate_handler():
 
     return jsonify({"success_flag":success_flag,"message": info,"state":state})
 
-# @app.route('/shift', methods=['POST'])
-# def shift_handler():
-#     data = request.get_json()
-#     direction = str(data.get('direction'))
-#     distance = float(data.get('distance'))
-#     if direction != 'left':
-#         distance = -1*distance
-
-#     if not distance:
-#         return jsonify({"message": "Distance is required"}), 400
-
-#     success_flag,info,state = execute_shift_command(distance)
-
-#     return jsonify({"success_flag":success_flag,"message": info,"state":state})
 
 @app.route('/get_lidar', methods=['POST'])
 def lidar_handler():
