@@ -42,7 +42,6 @@ class NodeManager:
         success_flag,info,state = self.step_control_client.send_goal(mode = 3, value = distance)
         return success_flag,info,state
 
-
     def navigation(self, x, y, theta):
         success_flag,info,state = self.move_base_client.send_goal(float(x), float(y), float(theta))
         return success_flag,info,state

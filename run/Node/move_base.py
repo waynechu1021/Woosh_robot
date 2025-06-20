@@ -24,13 +24,6 @@ class MoveBaseClient(Node):
         }
 
     def send_goal(self, x : float, y : float, theta : float):
-        '''
-        Args:
-            mode:   1 - forward/backward
-                    2 - rotate
-            value:  indicate `distance` when `mode == 1` and 'angle' when `model == 2`
-            speed:  linear speed or angular speed, default to `0.5`
-        '''
         goal_msg = MoveBase.Goal()
 
         mode = MoveBaseExecutionMode(value = 1)
