@@ -10,7 +10,7 @@ class StepControlClient(Node):
     def __init__(self):
         super().__init__('step_control_client')
         self._client = ActionClient(self, StepControl, '/woosh_robot/ros/StepControl')
-        self.task = 'StepControl'
+        self.task = 'StepControl '
         self.code2msg = {
             0: self.task + 'undefined.',
             1: self.task + 'success.',

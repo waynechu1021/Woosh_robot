@@ -11,7 +11,7 @@ class MoveBaseClient(Node):
     def __init__(self):
         super().__init__('move_base_client')
         self._client = ActionClient(self, MoveBase, '/woosh_robot/ros/MoveBase')
-        self.task = 'MoveBase'
+        self.task = 'MoveBase '
         self.code2msg = {
             0: self.task + 'undefined.',
             1: self.task + 'success.',
