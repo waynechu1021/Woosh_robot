@@ -53,9 +53,9 @@ class NodeManager:
         lidar_scan = lidar_scan[~np.isnan(lidar_scan)]
         lidar_scan = lidar_scan[np.isfinite(lidar_scan)]
         min_lidar_distance = np.min(lidar_scan)
-        while min_lidar_distance < 0.5:
+        while min_lidar_distance < 0.4:
             logging.warning("The obstacle is too close, back off!")
-            self.forward(distance = -0.5)
+            self.forward(distance = -0.3)
             lidar_scan, _ = self.get_lidar_client.send_get_lidar_request()
             angles = np.linspace(-2.1999948024749756, 2.1999948024749756, len(lidar_scan))  # 角度范围
             indice = np.where( (angles >= -math.pi/4) & (angles <= math.pi/4))

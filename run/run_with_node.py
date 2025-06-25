@@ -206,15 +206,18 @@ def prepare_node():
 if __name__ == "__main__":
     prepare4log()
     prepare_map()
+
+    woosh_agent_log = datetime.datetime.now().strftime("log/woosh_agent_log_%Y-%m-%d_%H-%M-%S.log")
+    f = open(woosh_agent_log, 'w')
     ros2_process = subprocess.Popen(
     ["ros2", "run", "woosh_robot_agent", "agent",
      "--ros-args", "-r", "__ns:=/woosh_robot", "-p", 'ip:="169.254.128.2"'],
     # ["ros2", "run", "woosh_robot_agent", "agent",
     #  "--ros-args", "-r", "__ns:=/woosh_robot", "-p", 'ip:="10.27.134.6"'],
-    stdout=subprocess.PIPE,
-    stderr=subprocess.PIPE,
+    stdout=f,
+    stderr=subprocess.STDOUT,
     text=True
 )
-    time.sleep(2)
+    time.sleep(3)
     prepare_node()
     app.run(host='0.0.0.0',debug=True,threaded=True)
