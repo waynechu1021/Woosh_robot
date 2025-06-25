@@ -22,7 +22,7 @@ def prepare4log():
     log_filename = datetime.datetime.now().strftime("log/log_%Y-%m-%d_%H-%M-%S.log")
     logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(asctime)s - %(message)s")
 
-def prepare_map(image_path = 'map_mid360_editted_03_04.png'):
+def prepare_map(image_path = 'scan_by_robot.png'):
     global resolution, origin, map_image, system_prompt, window_size, result
     map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     # extract all the pixel representing the feasible area
@@ -41,9 +41,9 @@ def prepare_map(image_path = 'map_mid360_editted_03_04.png'):
             if np.all(window > 220):
                 result.append((i, j))
     # YAML 文件参数
-    resolution = 0.05  # each pixel -> real distance
-    origin = [-29.641035598313977, -11.984327112417178, 0]
-    with open('system_prompt.txt') as f:
+    resolution = 0.03  # each pixel -> real distance
+    origin = [-14.25103271484375, -7.429531860351562, 0]
+    with open('system_prompt_0625.txt') as f:
         system_prompt = f.read()
 
 def world_to_pixel(world_coords):
@@ -108,7 +108,7 @@ def get_pose(query_text):
             return None, None, None
         if len(result_from_gpt) == 0:
             return None, None, None
-        x,y,_ = result_from_gpt[0]["中心坐标"]
+        x,y,theta = result_from_gpt[0]["中心坐标"]
         input_coords = [x, y]
         feasible, result_coords = is_point_feasible(input_coords)
         if feasible:
