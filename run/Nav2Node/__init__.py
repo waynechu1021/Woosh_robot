@@ -6,10 +6,8 @@ from .stop import StopClient
 
 
 from rclpy.executors import MultiThreadedExecutor
-import rclpy, math
+import rclpy
 from threading import Thread
-import numpy as np
-import logging
 
 
 class NodeManager:
@@ -45,25 +43,6 @@ class NodeManager:
         return success_flag,info,state
 
     def navigation(self, x, y, theta):
-        # get lidar data first
-        lidar_scan, _ = self.get_lidar_client.send_get_lidar_request()
-        angles = np.linspace(-2.1999948024749756, 2.1999948024749756, len(lidar_scan))  # 角度范围
-        indice = np.where( (angles >= -math.pi/4) & (angles <= math.pi/4))
-        lidar_scan = lidar_scan[indice]
-        lidar_scan = lidar_scan[~np.isnan(lidar_scan)]
-        lidar_scan = lidar_scan[np.isfinite(lidar_scan)]
-        min_lidar_distance = np.min(lidar_scan)
-        while min_lidar_distance < 0.5:
-            logging.warning("The obstacle is too close, back off!")
-            self.forward(distance = -0.5)
-            lidar_scan, _ = self.get_lidar_client.send_get_lidar_request()
-            angles = np.linspace(-2.1999948024749756, 2.1999948024749756, len(lidar_scan))  # 角度范围
-            indice = np.where( (angles >= -math.pi/4) & (angles <= math.pi/4))
-            lidar_scan = lidar_scan[indice]
-            lidar_scan = lidar_scan[~np.isnan(lidar_scan)]
-            lidar_scan = lidar_scan[np.isfinite(lidar_scan)]
-            min_lidar_distance = np.min(lidar_scan)
-
         success_flag,info,state = self.move_base_client.send_goal(float(x), float(y), float(theta))
         return success_flag,info,state
 
