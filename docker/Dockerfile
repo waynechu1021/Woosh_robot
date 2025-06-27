@@ -41,6 +41,7 @@ RUN pip3 install --user \
     opencv-python-headless \
     openai \
     flask \
+    pyrealsense2 \
     && rm -rf /root/.cache/pip
 
 WORKDIR /root

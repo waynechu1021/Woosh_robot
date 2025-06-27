@@ -10,9 +10,10 @@ import math
 import datetime
 import json
 import logging
-import re,os
+import re,os,io
 from flask import Flask, request, jsonify
 from Node import NodeManager
+import pyrealsense2 as rs
 
 app = Flask(__name__)
 
@@ -92,10 +93,10 @@ def is_point_feasible(world_coords):
             nearest_world = pixel_to_world(nearest_pixel)
             return False, nearest_world
     else:
-        logging.error("输入点超出地图范围！")
-        raise ValueError("输入点超出地图范围！")
+        logging.error("Input point is outside the map range!")
+        raise ValueError("Input point is outside the map range!")
 
-def get_pose(query_text):
+def convert_text2cordinate(query_text):
     try:
         result_from_gpt = requests.post("http://172.18.35.200:8000/uploads/llm_queries", json={"instruction": system_prompt, "prompt": query_text} )
         result_from_gpt = result_from_gpt.json()['read_message']
@@ -112,11 +113,11 @@ def get_pose(query_text):
         input_coords = [x, y]
         feasible, result_coords = is_point_feasible(input_coords)
         if feasible:
-            logging.info(f"输入点 {input_coords} 在可行区域内。")
+            logging.info(f"The input points {input_coords} are inside the feasible region.")
         else:
             new_x, new_y = result_coords
-            theta = calculate_theta(x, y, new_x, new_y) #new 指向 old
-            logging.info(f"输入点 {input_coords} 不在可行区域，最近的可行点是 {new_x, new_y}.")
+            theta = calculate_theta(x, y, new_x, new_y) #new -> old
+            logging.info(f"The input points {input_coords} are NOT inside the feasible region, The nearest feasible point is {new_x, new_y}.")
             x, y = new_x, new_y
         return x, y, theta
     except requests.RequestException as e:
@@ -126,6 +127,53 @@ def get_pose(query_text):
         logging.error(f"Error decoding JSON response: {e}")
         return None, None, None
 
+def convert_image2pose(use_depth = False):
+    serial_number = "152222070646" # head in the robot
+    pipeline = rs.pipeline()
+    config = rs.config()
+    config.enable_device(serial_number)
+
+    # color streaming, with resolution of 848x480 at fps = 30
+    config.enable_stream(rs.stream.color, 848, 480, rs.format.bgr8, 30)
+    # config.enable_stream(rs.stream.depth, 848, 480, rs.format.z16, 30)
+
+    pipeline.start(config)
+    frames = pipeline.wait_for_frames()
+
+    color_frame = frames.get_color_frame()
+
+    color_image = np.asanyarray(color_frame.get_data())
+    _, color_encoded = cv2.imencode('.jpg', color_image)
+    color_bytes = io.BytesIO(color_encoded.tobytes())
+
+    files = {
+        "image": ("color.jpg", color_bytes, "image/jpeg")
+    }
+
+    if use_depth:
+        depth_frame = frames.get_depth_frame()
+        depth_image = np.asanyarray(depth_frame.get_data()).to(np.float32) / 1000.0
+        depth_buf = io.BytesIO()
+        np.save(depth_buf, depth_image)
+        depth_buf.seek(0)
+        files["depth_image"] = ("depth_file.npy", depth_buf, "application/octet-stream")
+
+    pipeline.stop()
+    # result = requests.post("http://172.18.35.200:8000/uploads/llm_queries", json={"color_image": color_image, "depth_image": depth_image})
+    result = requests.post("http://10.16.242.37:5000/localize",files=files)
+    result = result.json()
+    x, y, theta = result['x'], result['y'], result['theta']
+    return x, y, theta
+
+def localization(initialize = False):
+    x, y, theta = convert_image2pose()
+    if initialize:
+        success_flag,info,state = node.init_robot(x, y ,theta)
+        logging.info(f"Initialize localization!")
+    else:
+        success_flag,info,state = node.set_pose(x, y, theta)
+        logging.info(f"localization after navigation!")
+    return success_flag,info,state
 
 @app.route('/get_pose_speed', methods=['POST'])
 def get_pose_speed_handler():
@@ -145,12 +193,13 @@ def text_nav_handler():
     if not goal_text:
         return jsonify({"message": "Goal text is required"}), 400
     
-    x, y, theta = get_pose(goal_text)
+    x, y, theta = convert_text2cordinate(goal_text)
     if x is None or y is None or theta is None:
         logging.warning("Skipping navigation due to invalid pose data.")
         return False, "Skipping navigation due to invalid pose data.", -2
 
     success_flag,info,state = node.navigation(x, y, theta)
+    localization()
 
     return jsonify({"success_flag":success_flag,"message": info,"state":state})
 
@@ -198,6 +247,47 @@ def lidar_handler():
     lidar_scan = lidar_scan[indice].tolist()
     return jsonify({"lidar_scan":lidar_scan})
 
+
+@app.route('/init_robot', methods=['POST'])
+def init_robot_handler():
+    data = request.get_json(silent=True)
+    if not data:
+        success_flag, info, state = node.init_robot()
+    else:
+        x = float(data.get('x'))
+        y = float(data.get('y'))
+        theta = float(data.get('theta'))
+        if not x or not y or not theta:
+            success_flag,info,state = node.init_robot()
+        else:
+            success_flag,info,state = node.init_robot(x, y ,theta)
+    return jsonify({"success_flag":success_flag,"message": info,"state":state})
+
+@app.route('/mute', methods=['POST'])
+def mute_handler():
+    data = request.get_json(silent=True)
+    if not data:
+        success_flag, info, state = node.mute()
+    else:
+        mute = bool(data.get('mute'))
+        if mute is None:
+            success_flag,info,state = node.mute()
+        else:
+            success_flag,info,state = node.mute(mute)
+    return jsonify({"success_flag":success_flag,"message": info,"state":state})
+
+
+@app.route('/set_pose', methods=['POST'])
+def set_pose_handler():
+    data = request.get_json()
+    x = float(data.get('x'))
+    y = float(data.get('y'))
+    theta = float(data.get('theta'))
+    if not x or not y or not theta:
+        return jsonify({"message": "x, y and theta are required"}), 400
+    success_flag,info,state = node.set_pose(x, y ,theta)
+    return jsonify({"success_flag":success_flag,"message": info,"state":state})
+
 def prepare_node():
     global node
     node = NodeManager()
@@ -220,4 +310,6 @@ if __name__ == "__main__":
 )
     time.sleep(3)
     prepare_node()
+    node.mute()
+    localization(initialize=True)
     app.run(host='0.0.0.0',debug=True,threaded=True)

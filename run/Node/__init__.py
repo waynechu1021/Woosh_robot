@@ -3,6 +3,9 @@ from .get_pose_speed import PoseSpeedClient
 from .move_base import MoveBaseClient
 from .step_control import StepControlClient
 from .stop import StopClient
+from .init_robot import InitRobotClient
+from .mute import MuteClient
+from .set_pose import SetPoseClient
 
 
 from rclpy.executors import MultiThreadedExecutor
@@ -22,12 +25,18 @@ class NodeManager:
         self.move_base_client = MoveBaseClient()
         self.step_control_client = StepControlClient()
         self.stop_client = StopClient()
+        self.init_robot_client = InitRobotClient()
+        self.mute_robot_client = MuteClient()
+        self.set_pose_client = SetPoseClient()
         
         self.executor.add_node(self.get_lidar_client)
         self.executor.add_node(self.get_pose_speed_client)
         self.executor.add_node(self.move_base_client)
         self.executor.add_node(self.step_control_client)
         self.executor.add_node(self.stop_client)
+        self.executor.add_node(self.init_robot_client)
+        self.executor.add_node(self.mute_robot_client)
+        self.executor.add_node(self.set_pose_client)
 
         executor_thread = Thread(target=self.executor.spin, daemon=True)
         executor_thread.start()
@@ -78,6 +87,18 @@ class NodeManager:
     def get_pose_speed(self):
         current_position,current_speed = self.get_pose_speed_client.send_get_pose_request()
         return current_position,current_speed
+    
+    def init_robot(self, x = 0.018, y = 0.0254, theta = -3.064):
+        success_flag,info,state = self.init_robot_client.send_init_robot_request(float(x), float(y), float(theta))
+        return success_flag,info,state
+    
+    def mute(self, mute = True):
+        success_flag,info,state = self.mute_robot_client.send_mute_request(mute)
+        return success_flag,info,state
+    
+    def set_pose(self, x, y, theta):
+        success_flag,info,state = self.init_robot_client.send_init_robot_request(float(x), float(y), float(theta))
+        return success_flag,info,state
 
     def destroy_all_node(self):
         self.get_lidar_client.destroy_node()
@@ -91,7 +112,8 @@ class NodeManager:
 
 
 # node = NodeManager()
-# node.step_control_client.send_goal(mode = 1, value = -1.5)
+# success_flag,info,state = node.init_robot()
 # node.move_base_client.send_goal(x = 0.78,y = -0.09, theta = 0.)
 # node.stop_client.send_cancel_request()
+# print(success_flag,info,state)
 # node.destroy_all_node()
