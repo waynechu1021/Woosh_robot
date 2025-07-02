@@ -1,4 +1,3 @@
-import rclpy
 from rclpy.node import Node
 from woosh_robot_msgs.srv import PoseSpeed, Scene
 from threading import Event

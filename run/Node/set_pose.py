@@ -1,4 +1,3 @@
-import rclpy
 from rclpy.node import Node
 from woosh_robot_msgs.srv import SetRobotPose
 from woosh_robot_msgs.msg import SetRobotPose as SetRobotPoseArg
@@ -13,7 +12,7 @@ class SetPoseClient(Node):
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Waiting for set_pose service...')
 
-    def send_init_robot_request(self, x : float, y : float, theta : float):
+    def send_set_pose_request(self, x : float, y : float, theta : float):
         request = SetRobotPose.Request()
         
         pose = Pose2D(x = x, y = y, theta = theta)

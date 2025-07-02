@@ -97,7 +97,7 @@ class NodeManager:
         return success_flag,info,state
     
     def set_pose(self, x, y, theta):
-        success_flag,info,state = self.init_robot_client.send_init_robot_request(float(x), float(y), float(theta))
+        success_flag,info,state = self.set_pose_client.send_set_pose_request(float(x), float(y), float(theta))
         return success_flag,info,state
 
     def destroy_all_node(self):

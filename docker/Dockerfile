@@ -28,6 +28,7 @@ RUN apt-get update && \
     build-essential \
     libprotobuf-dev \
     libgl1 \
+    libusb-1.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # RUN pip install --user --upgrade pip --index-url https://mirrors.sustech.edu.cn/pypi/web/simple
@@ -37,7 +38,7 @@ RUN pip3 install --user \
     requests \
     numpy \
     scipy \
-    SpeechRecognition \
+    pyyaml \
     opencv-python-headless \
     openai \
     flask \
@@ -59,4 +60,4 @@ RUN chmod +x ros-humble-woosh-robot-agent_0.0.2-0jammy_arm64.run
 RUN ./ros-humble-woosh-robot-agent_0.0.2-0jammy_arm64.run
 
 WORKDIR /root/Woosh_robot
-CMD /bin/bash -c "cd run && GPT_KEY=\"\" python3 run_with_node.py"
+CMD /bin/bash -c "cd run && GPT_KEY=\"\" python3 run.py"

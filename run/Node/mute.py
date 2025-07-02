@@ -1,4 +1,3 @@
-import rclpy
 from rclpy.node import Node
 from woosh_robot_msgs.srv import SetProgramMute
 from woosh_robot_msgs.msg import SetProgramMute as SetProgramMuteArg
