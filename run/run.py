@@ -47,7 +47,7 @@ def prepare_map(file_path = './map/scan_by_robot'):
         data = yaml.safe_load(f)
         resolution = data['resolution']  # each pixel -> real distance
         origin = data['origin']
-    with open('system_prompt_0702.txt') as f:
+    with open('system_prompt.txt') as f:
         system_prompt = f.read()
 
 def prepare_icp():
@@ -205,7 +205,7 @@ def prepare_node():
 
 if __name__ == "__main__":
     prepare4log()
-    prepare_map('./map/map_07_02')
+    prepare_map()
     prepare_icp()
 
     woosh_agent_log = datetime.datetime.now().strftime("log/woosh_agent_log_%Y-%m-%d_%H-%M-%S.log")
@@ -222,6 +222,6 @@ if __name__ == "__main__":
     time.sleep(3)
     prepare_node()
     node.mute()
-    localization(initialize=True)
-    # node.init_robot()
+    # localization(initialize=True)
+    node.init_robot()
     app.run(host='0.0.0.0',debug=False,threaded=True)
