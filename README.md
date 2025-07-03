@@ -56,6 +56,8 @@
 git clone https://github.com/waynechu1021/Woosh_robot.git
 cd Woosh_robot
 pip install -r requirements.txt
+chmod +x /ros-humble-woosh-robot-agent_0.0.1-0jammy_amd64.run
+./ros-humble-woosh-robot-agent_0.0.1-0jammy_amd64.run
 ```
 
 ### Connect to the woosh robot
