@@ -71,6 +71,7 @@ export RMW_NETWORK_INTERFACE=eth2 # change this to the network that connect to t
 ```
 ### Run
 ```bash
+cd src
 python3 run.py
 ```
 
