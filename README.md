@@ -2,12 +2,12 @@
 
 ## Overview
 ```text
-├── docker 
+├── docker # used for edge device deployment
 │   ├── Dockerfile
 │   ├── launch.sh
 │   ├── ros-foxy-woosh-robot-agent_0.0.1-0focal_arm64.run
 │   └── ros-humble-woosh-robot-agent_0.0.2-0jammy_arm64.run
-├── map_generate
+├── map_generate # some useful functions to generate maps
 │   ├── map.png
 │   ├── map.yaml
 │   ├── mesh2map_black.py
@@ -16,14 +16,14 @@
 ├── requirements.txt
 ├── ros-humble-woosh-robot-agent_0.0.1-0jammy_amd64.run
 ├── ros-jazzy-woosh-robot-agent_0.0.1-0noble_amd64.run
-├── run
-│   ├── Nav2Node
+├── src
+│   ├── Nav2Node # Node for nav2 architecture
 │   │   ├── __init__.py
 │   │   ├── get_pose_speed.py
 │   │   ├── move_base.py
 │   │   ├── step_control.py
 │   │   └── stop.py
-│   ├── Node
+│   ├── Node # Node for woosh robot navigation
 │   │   ├── __init__.py
 │   │   ├── get_lidar.py
 │   │   ├── get_pose_speed.py
@@ -33,16 +33,16 @@
 │   │   ├── set_pose.py
 │   │   ├── step_control.py
 │   │   └── stop.py
-│   ├── icp.py
-│   ├── map
+│   ├── icp.py # icp localization
+│   ├── map # map files, configurations and corresponding prompts
 │   │   ├── map_07_02.png
 │   │   ├── map_07_02.txt
 │   │   ├── map_07_02.yaml
 │   │   ├── scan_by_robot.png
 │   │   ├── scan_by_robot.txt
 │   │   └── scan_by_robot.yaml
-│   ├── map_utils.py
-│   └── run.py
+│   ├── map_utils.py # useful functions for navigation
+│   └── run.py # entry point
 ```
 
 ## Use in your PC
