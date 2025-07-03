@@ -1,0 +1,9 @@
+requests 
+numpy 
+scipy 
+pyyaml 
+opencv-python-headless 
+openai 
+flask 
+open3d 
+pyrealsense2 

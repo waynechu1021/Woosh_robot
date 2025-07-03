@@ -25,6 +25,7 @@ def prepare4log():
 def prepare_map(file_path = './map/scan_by_robot'):
     image_path = file_path + '.png'
     yaml_path = file_path + '.yaml'
+    sp_path = file_path + '.txt'
     global resolution, origin, map_image, system_prompt, window_size, free_points
     map_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     # extract all the pixel representing the feasible area
@@ -47,7 +48,7 @@ def prepare_map(file_path = './map/scan_by_robot'):
         data = yaml.safe_load(f)
         resolution = data['resolution']  # each pixel -> real distance
         origin = data['origin']
-    with open('system_prompt.txt') as f:
+    with open(sp_path) as f:
         system_prompt = f.read()
 
 def prepare_icp():
@@ -109,6 +110,8 @@ def text_nav_handler():
         return False, "Skipping navigation due to invalid pose data.", -2
 
     success_flag,info,state = node.navigation(x, y, theta)
+    [x,y,theta],_ = node.get_pose_speed()
+    logging.info(f"current pose = [{x, y, theta}]")
     # localization()
 
     return jsonify({"success_flag":success_flag,"message": info,"state":state})
