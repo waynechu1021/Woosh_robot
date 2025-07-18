@@ -1,4 +1,3 @@
-import rclpy
 from rclpy.node import Node
 from action_msgs.srv import CancelGoal
 from threading import Event

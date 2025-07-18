@@ -2,6 +2,7 @@ import numpy as np
 import pyrealsense2 as rs
 import cv2, io, requests, json, logging, math
 from scipy.spatial import cKDTree
+import time
 
 def world_to_pixel(world_coords, map_image, origin, resolution):
     x, y = world_coords
@@ -96,6 +97,8 @@ def convert_image2pose(use_depth = False):
     # config.enable_stream(rs.stream.depth, 848, 480, rs.format.z16, 30)
 
     pipeline.start(config)
+    time.sleep(3)
+
     frames = pipeline.wait_for_frames()
 
     color_frame = frames.get_color_frame()
